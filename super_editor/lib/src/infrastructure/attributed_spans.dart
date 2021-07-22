@@ -895,7 +895,7 @@ class AttributedSpans {
       identical(this, other) ||
       other is AttributedSpans &&
           runtimeType == other.runtimeType &&
-          const DeepCollectionEquality().equals(_attributions, other._attributions);
+          const DeepCollectionEquality.unordered().equals(_attributions, other._attributions);
 
   @override
   int get hashCode => _attributions.hashCode;
