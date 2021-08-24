@@ -413,7 +413,8 @@ final defaultComponentBuilders = <ComponentBuilder>[
 final defaultKeyboardActions = <DocumentKeyboardAction>[
   doNothingWhenThereIsNoSelection,
   pasteWhenCmdVIsPressed,
-  copyWhenCmdVIsPressed,
+  copyWhenCmdCIsPressed,
+  cutWhenCmdXIsPressed,
   selectAllWhenCmdAIsPressed,
   moveUpDownLeftAndRightWithArrowKeys,
   tabToIndentListItem,

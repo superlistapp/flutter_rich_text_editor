@@ -215,7 +215,7 @@ class _PasteEditorCommand implements EditorCommand {
   }
 }
 
-ExecutionInstruction copyWhenCmdVIsPressed({
+ExecutionInstruction copyWhenCmdCIsPressed({
   required EditContext editContext,
   required RawKeyEvent keyEvent,
 }) {
@@ -230,20 +230,52 @@ ExecutionInstruction copyWhenCmdVIsPressed({
     return ExecutionInstruction.haltExecution;
   }
 
-  // TODO: figure out a general approach for asynchronous behaviors that
-  //       need to be carried out in response to user input.
-  _copy(
+  final textToCopy = _textInSelection(
     document: editContext.editor.document,
     documentSelection: editContext.composer.selection!,
   );
+  // TODO: figure out a general approach for asynchronous behaviors that
+  //       need to be carried out in response to user input.
+  _saveToClipboard(textToCopy);
 
   return ExecutionInstruction.haltExecution;
 }
 
-Future<void> _copy({
+ExecutionInstruction cutWhenCmdXIsPressed({
+  required EditContext editContext,
+  required RawKeyEvent keyEvent,
+}) {
+  if (!keyEvent.isPrimaryShortcutKeyPressed || keyEvent.character?.toLowerCase() != 'x') {
+    return ExecutionInstruction.continueExecution;
+  }
+  if (editContext.composer.selection == null) {
+    return ExecutionInstruction.continueExecution;
+  }
+  if (editContext.composer.selection!.isCollapsed) {
+    // Nothing to cut, but we technically handled the task.
+    return ExecutionInstruction.haltExecution;
+  }
+
+  final textToCut = _textInSelection(
+    document: editContext.editor.document,
+    documentSelection: editContext.composer.selection!,
+  );
+  // TODO: figure out a general approach for asynchronous behaviors that
+  //       need to be carried out in response to user input.
+  _saveToClipboard(textToCut);
+
+  editContext.commonOps.deleteSelection();
+  return ExecutionInstruction.haltExecution;
+}
+
+Future<void> _saveToClipboard(String text) {
+  return Clipboard.setData(ClipboardData(text: text));
+}
+
+String _textInSelection({
   required Document document,
   required DocumentSelection documentSelection,
-}) async {
+}) {
   final selectedNodes = document.getNodesInside(
     documentSelection.base,
     documentSelection.extent,
@@ -293,12 +325,7 @@ Future<void> _copy({
       }
     }
   }
-
-  await Clipboard.setData(
-    ClipboardData(
-      text: buffer.toString(),
-    ),
-  );
+  return buffer.toString();
 }
 
 ExecutionInstruction cmdBToToggleBold({
