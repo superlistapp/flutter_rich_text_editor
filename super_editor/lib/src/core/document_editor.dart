@@ -297,7 +297,7 @@ class MutableDocument with ChangeNotifier implements Document {
       identical(this, other) ||
       other is MutableDocument &&
           runtimeType == other.runtimeType &&
-          const DeepCollectionEquality().equals(_nodes, nodes);
+          const DeepCollectionEquality().equals(_nodes, other.nodes);
 
   @override
   int get hashCode => _nodes.hashCode;
