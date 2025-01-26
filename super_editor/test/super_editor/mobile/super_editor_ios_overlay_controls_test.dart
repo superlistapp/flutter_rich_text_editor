@@ -132,6 +132,36 @@ void main() {
       expect(SuperEditorInspector.isMobileMagnifierVisible(), isFalse);
     });
 
+    testWidgetsOnIos("shows toolbar when long pressing on an empty paragraph and hides it after typing",
+        (tester) async {
+      await tester //
+          .createDocument()
+          .withSingleEmptyParagraph()
+          .pump();
+
+      // Ensure the toolbar is not visible.
+      expect(SuperEditorInspector.isMobileToolbarVisible(), isFalse);
+
+      // Long press, this shouldn't show the toolbar.
+      final gesture = await tester.longPressDownInParagraph('1', 0);
+
+      // Ensure the toolbar is not visible yet.
+      expect(SuperEditorInspector.isMobileToolbarVisible(), isFalse);
+
+      // Release the finger.
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // Ensure the toolbar is visible.
+      expect(SuperEditorInspector.isMobileToolbarVisible(), isTrue);
+
+      // Type a character to hide the toolbar.
+      await tester.typeImeText('a');
+
+      // Ensure the toolbar is not visible.
+      expect(SuperEditorInspector.isMobileToolbarVisible(), isFalse);
+    });
+
     testWidgetsOnIos("does not show toolbar upon first tap", (tester) async {
       await tester //
           .createDocument()
