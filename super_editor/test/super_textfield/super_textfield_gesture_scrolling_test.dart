@@ -272,6 +272,7 @@ void main() {
       var textTop = tester.getTopRight(find.byType(SuperTextField)).dy;
       var viewportTop = tester.getTopRight(find.byType(SuperText)).dy;
       expect(textTop, moreOrLessEquals(viewportTop));
+      expect(SuperTextFieldInspector.findScrollOffset(), 0.0);
 
       // Scroll down to reveal the last line of text.
       await tester.drag(find.byType(SuperTextField), const Offset(0, -1000.0));
@@ -281,6 +282,10 @@ void main() {
       var textBottom = tester.getBottomRight(find.byType(SuperTextField)).dy;
       var viewportBottom = tester.getBottomRight(find.byType(SuperText)).dy;
       expect(textBottom, moreOrLessEquals(viewportBottom));
+      // Since the scrollable content is taller than the viewport, and since
+      // the bottom of the text field is aligned with the bottom of the
+      // viewport, the scroll offset should be greater than 0.
+      expect(SuperTextFieldInspector.findScrollOffset(), greaterThan(0.0));
 
       // Scroll back up to the top of the text field.
       await tester.drag(find.byType(SuperTextField), const Offset(0, 1000.0));
@@ -290,6 +295,7 @@ void main() {
       textTop = tester.getTopRight(find.byType(SuperTextField)).dy;
       viewportTop = tester.getTopRight(find.byType(SuperText)).dy;
       expect(textTop, moreOrLessEquals(viewportTop));
+      expect(SuperTextFieldInspector.findScrollOffset(), 0.0);
     });
 
     testWidgetsOnDesktop("multi-line is vertically scrollable when text spans more lines than maxLines",
@@ -315,6 +321,7 @@ void main() {
       var textTop = tester.getTopRight(find.byType(SuperTextField)).dy;
       var viewportTop = tester.getTopRight(find.byType(SuperText)).dy;
       expect(textTop, moreOrLessEquals(viewportTop));
+      expect(SuperTextFieldInspector.findScrollOffset(), 0.0);
 
       // Scroll down to reveal the last line of text.
       await tester.drag(
@@ -328,6 +335,10 @@ void main() {
       var textBottom = tester.getBottomRight(find.byType(SuperTextField)).dy;
       var viewportBottom = tester.getBottomRight(find.byType(SuperText)).dy;
       expect(textBottom, moreOrLessEquals(viewportBottom));
+      // Issue is not present on desktop, further leading me to think that the
+      // issue is somehow related to that comment about the scroll offsets
+      // being out of sync in the mobile scroll view.
+      expect(SuperTextFieldInspector.findScrollOffset(), greaterThan(0.0));
 
       // Scroll back up to the top of the text field.
       await tester.drag(
@@ -341,6 +352,7 @@ void main() {
       textTop = tester.getTopRight(find.byType(SuperTextField)).dy;
       viewportTop = tester.getTopRight(find.byType(SuperText)).dy;
       expect(textTop, moreOrLessEquals(viewportTop));
+      expect(SuperTextFieldInspector.findScrollOffset(), 0.0);
     });
   });
 }
