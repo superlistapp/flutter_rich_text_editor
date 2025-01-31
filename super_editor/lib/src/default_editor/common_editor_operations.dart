@@ -439,6 +439,7 @@ class CommonEditorOperations {
         throw Exception(
             'Could not find next component to move the selection horizontally. Next node ID: ${nextNode.id}');
       }
+      print("Next component: $nextComponent, beginning position: ${nextComponent.getBeginningPosition()}");
       newExtentNodePosition = nextComponent.getBeginningPosition();
     }
 

@@ -105,7 +105,11 @@ class ParagraphComponentBuilder implements ComponentBuilder {
   const ParagraphComponentBuilder();
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     if (node is! ParagraphNode) {
       return null;
     }

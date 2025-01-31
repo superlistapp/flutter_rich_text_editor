@@ -481,6 +481,346 @@ extension InspectNodeAffinity on DocumentNode {
   }
 }
 
+/// The path to a [DocumentNode] within a [Document].
+///
+/// In the average case, the [NodePath] is effectively the same as a node's
+/// ID. However, some nodes are [CompositeDocumentNode]s, which have a hierarchy.
+/// For a composite node, the node path includes every node ID in the composite
+/// hierarchy.
+class NodePath {
+  factory NodePath.forDocumentPosition(DocumentPosition position) {
+    var nodePosition = position.nodePosition;
+    if (nodePosition is CompositeNodePosition) {
+      // This node position is a hierarchy of nodes. Encode all nodes
+      // along that path into the node path.
+      final nodeIds = [position.nodeId];
+
+      while (nodePosition is CompositeNodePosition) {
+        nodeIds.add(nodePosition.childNodeId);
+        nodePosition = nodePosition.childNodePosition;
+      }
+
+      return NodePath(nodeIds);
+    }
+
+    // This position refers to a singular node. Build a node path that only
+    // contains this node's ID.
+    return NodePath([position.nodeId]);
+  }
+
+  factory NodePath.forNode(String nodeId) {
+    return NodePath([nodeId]);
+  }
+
+  const NodePath(this.nodeIds);
+
+  final List<String> nodeIds;
+
+  NodePath addSubPath(String nodeId) => NodePath([...nodeIds, nodeId]);
+
+  @override
+  String toString() => "[NodePath] - ${nodeIds.join(" > ")}";
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NodePath &&
+          runtimeType == other.runtimeType &&
+          const DeepCollectionEquality().equals(nodeIds, other.nodeIds);
+
+  @override
+  int get hashCode => const ListEquality().hash(nodeIds);
+}
+
+/// A [DocumentNode] that contains other [DocumentNode]s in a hierarchy.
+///
+/// [CompositeDocumentNode]s can contain more [CompositeDocumentNode]s. There's no
+/// logical restriction on the depth of this hierarchy. However, the effect of a multi-level
+/// hierarchy depends on the document layout and components that are used within a
+/// given editor.
+class CompositeDocumentNode extends DocumentNode {
+  CompositeDocumentNode(this.id, this._nodes)
+      : assert(_nodes.isNotEmpty, "CompositeDocumentNode's must contain at least 1 inner node.");
+
+  @override
+  final String id;
+
+  Iterable<DocumentNode> get nodes => List.from(_nodes);
+  final List<DocumentNode> _nodes;
+
+  int get nodeCount => _nodes.length;
+
+  @override
+  NodePosition get beginningPosition => CompositeNodePosition(
+        compositeNodeId: id,
+        childNodeId: _nodes.first.id,
+        childNodePosition: _nodes.first.beginningPosition,
+      );
+
+  @override
+  NodePosition get endPosition => CompositeNodePosition(
+        compositeNodeId: id,
+        childNodeId: _nodes.last.id,
+        childNodePosition: _nodes.last.endPosition,
+      );
+
+  @override
+  NodePosition selectUpstreamPosition(NodePosition position1, NodePosition position2) {
+    if (position1 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position1 but received a ${position1.runtimeType}');
+    }
+    if (position2 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position2 but received a ${position2.runtimeType}');
+    }
+
+    if (position1.compositeNodeId != id) {
+      throw Exception(
+          "Expected position1 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position1.compositeNodeId}");
+    }
+    if (position2.compositeNodeId != id) {
+      throw Exception(
+          "Expected position2 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position2.compositeNodeId}");
+    }
+
+    final position1NodeIndex = _findNodeIndexById(position1.childNodeId);
+    if (position1NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position1.childNodeId}");
+    }
+
+    final position2NodeIndex = _findNodeIndexById(position2.childNodeId);
+    if (position2NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position2.childNodeId}");
+    }
+
+    if (position1NodeIndex <= position2NodeIndex) {
+      return position1;
+    } else {
+      return position2;
+    }
+  }
+
+  @override
+  NodePosition selectDownstreamPosition(NodePosition position1, NodePosition position2) {
+    if (position1 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position1 but received a ${position1.runtimeType}');
+    }
+    if (position2 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position2 but received a ${position2.runtimeType}');
+    }
+
+    if (position1.compositeNodeId != id) {
+      throw Exception(
+          "Expected position1 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position1.compositeNodeId}");
+    }
+    if (position2.compositeNodeId != id) {
+      throw Exception(
+          "Expected position2 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position2.compositeNodeId}");
+    }
+
+    final position1NodeIndex = _findNodeIndexById(position1.childNodeId);
+    if (position1NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position1.childNodeId}");
+    }
+
+    final position2NodeIndex = _findNodeIndexById(position2.childNodeId);
+    if (position2NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position2.childNodeId}");
+    }
+
+    if (position1NodeIndex < position2NodeIndex) {
+      return position2;
+    } else {
+      return position1;
+    }
+  }
+
+  @override
+  CompositeNodeSelection computeSelection({required NodePosition base, required NodePosition extent}) {
+    if (base is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for base but received a ${base.runtimeType}');
+    }
+    if (extent is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for extent but received a ${extent.runtimeType}');
+    }
+
+    return CompositeNodeSelection(base: base, extent: extent);
+  }
+
+  @override
+  bool containsPosition(Object position) {
+    // Composite nodes don't have a node position type. This query doesn't apply.
+    throw UnimplementedError();
+  }
+
+  int? _findNodeIndexById(String childNodeId) {
+    for (int i = 0; i < _nodes.length; i += 1) {
+      if (_nodes[i].id == childNodeId) {
+        return i;
+      }
+    }
+
+    return null;
+  }
+
+  @override
+  String? copyContent(NodeSelection selection) {
+    if (selection is! CompositeNodeSelection) {
+      return null;
+    }
+
+    if (selection.base.compositeNodeId != id) {
+      return null;
+    }
+
+    final baseNodeIndex = _findNodeIndexById(selection.base.childNodeId);
+    if (baseNodeIndex == null) {
+      return null;
+    }
+
+    final extentNodeIndex = _findNodeIndexById(selection.extent.childNodeId);
+    if (extentNodeIndex == null) {
+      return null;
+    }
+
+    if (baseNodeIndex == extentNodeIndex) {
+      // The selection sits entirely within a single node. Copy partial content
+      // from that node.
+      final childNode = _nodes[extentNodeIndex];
+      final childSelection = childNode.computeSelection(
+        base: selection.base.childNodePosition,
+        extent: selection.extent.childNodePosition,
+      );
+      return childNode.copyContent(childSelection);
+    }
+
+    // The selection spans some number of nodes. Collate content from all of those nodes.
+    final buffer = StringBuffer();
+    if (baseNodeIndex < extentNodeIndex) {
+      // The selection is in natural order. Grab content starting at the base
+      // position, all the way to the extent position.
+      final startNode = _nodes[baseNodeIndex];
+      buffer.writeln(startNode.copyContent(
+        startNode.computeSelection(base: selection.base.childNodePosition, extent: startNode.endPosition),
+      ));
+
+      for (int i = baseNodeIndex + 1; i < extentNodeIndex; i += 1) {
+        final node = _nodes[i];
+        buffer.writeln(
+          node.copyContent(
+            node.computeSelection(base: node.beginningPosition, extent: node.endPosition),
+          ),
+        );
+      }
+
+      final endNode = _nodes[extentNodeIndex];
+      buffer.write(endNode.copyContent(
+        endNode.computeSelection(base: endNode.beginningPosition, extent: selection.extent.childNodePosition),
+      ));
+    } else {
+      // The selection is in reverse order. Grab content starting at the extent
+      // position, all the way to the base position.
+      final startNode = _nodes[extentNodeIndex];
+      buffer.writeln(startNode.copyContent(
+        startNode.computeSelection(base: selection.extent.childNodePosition, extent: startNode.endPosition),
+      ));
+
+      for (int i = extentNodeIndex + 1; i < baseNodeIndex; i += 1) {
+        final node = _nodes[i];
+        buffer.writeln(
+          node.copyContent(
+            node.computeSelection(base: node.beginningPosition, extent: node.endPosition),
+          ),
+        );
+      }
+
+      final endNode = _nodes[baseNodeIndex];
+      buffer.write(endNode.copyContent(
+        endNode.computeSelection(base: endNode.beginningPosition, extent: selection.base.childNodePosition),
+      ));
+    }
+
+    return buffer.toString();
+  }
+
+  @override
+  DocumentNode copyAndReplaceMetadata(Map<String, dynamic> newMetadata) {
+    return copy();
+  }
+
+  @override
+  DocumentNode copyWithAddedMetadata(Map<String, dynamic> newProperties) {
+    return copy();
+  }
+
+  DocumentNode copy() {
+    return CompositeDocumentNode(id, List.from(_nodes));
+  }
+
+  @override
+  String toString() => "[CompositeNode] - $_nodes";
+}
+
+/// A selection within a single [CompositeDocumentNode].
+class CompositeNodeSelection implements NodeSelection {
+  const CompositeNodeSelection({
+    required this.base,
+    required this.extent,
+  });
+
+  final CompositeNodePosition base;
+  final CompositeNodePosition extent;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CompositeNodeSelection &&
+          runtimeType == other.runtimeType &&
+          base == other.base &&
+          extent == other.extent;
+
+  @override
+  int get hashCode => base.hashCode ^ extent.hashCode;
+}
+
+/// A [NodePosition] for a [CompositeDocumentNode], which is a node that contains
+/// other nodes in a node hierarchy.
+class CompositeNodePosition implements NodePosition {
+  const CompositeNodePosition({
+    required this.compositeNodeId,
+    required this.childNodeId,
+    required this.childNodePosition,
+  });
+
+  final String compositeNodeId;
+  final String childNodeId;
+  final NodePosition childNodePosition;
+
+  @override
+  bool isEquivalentTo(NodePosition other) {
+    if (other is! CompositeNodePosition) {
+      return false;
+    }
+
+    if (compositeNodeId != other.compositeNodeId || childNodeId != other.childNodeId) {
+      return false;
+    }
+
+    return childNodePosition.isEquivalentTo(other.childNodePosition);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CompositeNodePosition &&
+          runtimeType == other.runtimeType &&
+          compositeNodeId == other.compositeNodeId &&
+          childNodeId == other.childNodeId &&
+          childNodePosition == other.childNodePosition;
+
+  @override
+  int get hashCode => compositeNodeId.hashCode ^ childNodeId.hashCode ^ childNodePosition.hashCode;
+}
+
 /// Marker interface for a selection within a [DocumentNode].
 abstract class NodeSelection {
   // marker interface

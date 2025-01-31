@@ -100,7 +100,11 @@ class HintTextComponentBuilder implements ComponentBuilder {
   const HintTextComponentBuilder();
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     // This component builder can work with the standard paragraph view model.
     // We'll defer to the standard paragraph component builder to create it.
     return null;
@@ -179,7 +183,11 @@ class _FakeImageComponentBuilder implements ComponentBuilder {
   const _FakeImageComponentBuilder();
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     return null;
   }
 

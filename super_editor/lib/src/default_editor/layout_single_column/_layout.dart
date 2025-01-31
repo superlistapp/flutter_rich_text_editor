@@ -970,13 +970,18 @@ class _Component extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("Layout build()");
     final componentContext = SingleColumnDocumentComponentContext(
       context: context,
       componentKey: componentKey,
+      componentBuilders: List.unmodifiable(componentBuilders),
     );
+    print("Building component for view model: $componentViewModel");
     for (final componentBuilder in componentBuilders) {
+      print(" - Trying to create component with build: $componentBuilder");
       var component = componentBuilder.createComponent(componentContext, componentViewModel);
       if (component != null) {
+        print("   - This builder gave us a component");
         // TODO: we might need a SizeChangedNotifier here for the case where two components
         //       change size exactly inversely
         component = ConstrainedBox(

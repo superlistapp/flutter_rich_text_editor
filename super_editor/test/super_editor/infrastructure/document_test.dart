@@ -3,6 +3,18 @@ import 'package:super_editor/super_editor.dart';
 
 void main() {
   group("Document", () {
+    group("node paths >", () {
+      test("equality", () {
+        expect(NodePath.forNode("1"), equals(NodePath.forNode("1")));
+        expect(NodePath.forNode("1"), isNot(equals(NodePath.forNode("2"))));
+
+        final map = <NodePath, String>{
+          NodePath.forNode("1"): "Hello",
+        };
+        expect(map[NodePath.forNode("1")], "Hello");
+      });
+    });
+
     group("nodes", () {
       group("equality", () {
         test("equivalent TextNodes are equal", () {

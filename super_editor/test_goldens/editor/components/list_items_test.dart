@@ -397,14 +397,18 @@ class _ListItemWithCustomStyleBuilder implements ComponentBuilder {
   final OrderedListNumeralStyle? numeralStyle;
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     if (node is! ListItemNode) {
       return null;
     }
 
     // Use the default component builder to create the view model, because we only want
     // to customize the style.
-    final viewModel = const ListItemComponentBuilder().createViewModel(document, node);
+    final viewModel = const ListItemComponentBuilder().createViewModel(document, node, componentBuilders);
 
     if (viewModel is UnorderedListItemComponentViewModel && dotStyle != null) {
       viewModel.dotStyle = dotStyle!;
@@ -417,7 +421,9 @@ class _ListItemWithCustomStyleBuilder implements ComponentBuilder {
 
   @override
   Widget? createComponent(
-      SingleColumnDocumentComponentContext componentContext, SingleColumnLayoutComponentViewModel componentViewModel) {
+    SingleColumnDocumentComponentContext componentContext,
+    SingleColumnLayoutComponentViewModel componentViewModel,
+  ) {
     // We can use the default component for list items.
     return null;
   }

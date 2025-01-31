@@ -14,6 +14,7 @@ import 'package:super_editor/src/core/edit_context.dart';
 import 'package:super_editor/src/core/editor.dart';
 import 'package:super_editor/src/core/styles.dart';
 import 'package:super_editor/src/default_editor/common_editor_operations.dart';
+import 'package:super_editor/src/default_editor/composite_component.dart';
 import 'package:super_editor/src/default_editor/debug_visualization.dart';
 import 'package:super_editor/src/default_editor/document_gestures_touch_android.dart';
 import 'package:super_editor/src/default_editor/document_gestures_touch_ios.dart';
@@ -1349,6 +1350,7 @@ const defaultComponentBuilders = <ComponentBuilder>[
   ListItemComponentBuilder(),
   ImageComponentBuilder(),
   HorizontalRuleComponentBuilder(),
+  CompositeComponentBuilder(),
 ];
 
 /// Default list of document overlays that are displayed on top of the document

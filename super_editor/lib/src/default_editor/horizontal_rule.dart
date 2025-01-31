@@ -68,7 +68,11 @@ class HorizontalRuleComponentBuilder implements ComponentBuilder {
   const HorizontalRuleComponentBuilder();
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     if (node is! HorizontalRuleNode) {
       return null;
     }
