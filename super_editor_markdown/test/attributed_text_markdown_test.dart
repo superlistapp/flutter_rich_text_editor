@@ -68,5 +68,75 @@ void main() {
         "This is **ove*rla**pping* styles.",
       );
     });
+
+    test("First character in the attribution span is white space", () {
+      expect(
+        AttributedText(
+          //      b   b
+          "This is bold text.",
+          AttributedSpans(
+            attributions: [
+              const SpanMarker(attribution: boldAttribution, offset: 7, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: boldAttribution, offset: 11, markerType: SpanMarkerType.end),
+            ],
+          ),
+        ).toMarkdown(),
+        "This is **bold** text.",
+      );
+    });
+
+    test("Last character in the attribution span is white space", () {
+      expect(
+        AttributedText(
+          //       b   b
+          "This is bold text.",
+          AttributedSpans(
+            attributions: [
+              const SpanMarker(attribution: boldAttribution, offset: 8, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: boldAttribution, offset: 12, markerType: SpanMarkerType.end), 
+            ],
+          ),
+        ).toMarkdown(),
+        "This is **bold** text.",
+      );
+    });
+
+    test("First and last character in overlapping attribution spans is white space", () {
+      expect(
+        AttributedText(
+          //      b    b
+          //      i    i
+          "This is bold text.",
+          AttributedSpans(
+            attributions: [
+              const SpanMarker(attribution: boldAttribution, offset: 7, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: boldAttribution, offset: 12, markerType: SpanMarkerType.end), 
+              const SpanMarker(attribution: italicsAttribution, offset: 7, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: italicsAttribution, offset: 12, markerType: SpanMarkerType.end),
+            ],
+          ),
+        ).toMarkdown(),
+        "This is ***bold*** text.",
+      );
+    });
+
+    test("First and last character in one attribution span is white space", () {
+      expect(
+        AttributedText(
+          //       b  b
+          //      i    i
+          "This is bold text.",
+          AttributedSpans(
+            attributions: [
+              const SpanMarker(attribution: boldAttribution, offset: 8, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: boldAttribution, offset: 11, markerType: SpanMarkerType.end), 
+              const SpanMarker(attribution: italicsAttribution, offset: 7, markerType: SpanMarkerType.start),
+              const SpanMarker(attribution: italicsAttribution, offset: 12, markerType: SpanMarkerType.end),
+            ],
+          ),
+        ).toMarkdown(),
+        "This is ***bold*** text.",
+      );
+    });
   });
 }
