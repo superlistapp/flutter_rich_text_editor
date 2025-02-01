@@ -17,9 +17,7 @@ void main() {
       testWidgets("up arrow moves text caret to upstream edge of block from node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 0)),
-          ),
+          initialSelection: TextNode.caretAt(["3"], 0),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -34,10 +32,8 @@ void main() {
       testWidgets("up arrow moves text caret to downstream edge of block from node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            // The caret needs to be on the 1st line, in the right half of the line.
-            position: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 33)),
-          ),
+          // The caret needs to be on the 1st line, in the right half of the line.
+          initialSelection: TextNode.caretAt(["3"], 33),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -52,9 +48,7 @@ void main() {
       testWidgets("up arrow moves caret from upstream edge to text node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -69,9 +63,7 @@ void main() {
       testWidgets("up arrow moves caret from downstream edge to text node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -86,9 +78,7 @@ void main() {
       testWidgets("left arrow moves caret to text node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -104,9 +94,7 @@ void main() {
       testWidgets("right arrow moves caret to text node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -122,9 +110,7 @@ void main() {
       testWidgets("delete moves caret down to block from node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 37)),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 37),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -139,9 +125,7 @@ void main() {
       testWidgets("backspace moves caret up to block from node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 0)),
-          ),
+          initialSelection: TextNode.caretAt(["3"], 0),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -158,10 +142,8 @@ void main() {
       testWidgets("text caret moves to upstream edge of block from node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            // Caret needs to sit on the left half of the last line in the paragraph.
-            position: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          ),
+          // Caret needs to sit on the left half of the last line in the paragraph.
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -176,10 +158,8 @@ void main() {
       testWidgets("text caret moves to downstream edge of block from node above", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            // Caret needs to sit in right half of the last line in the paragraph.
-            position: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 37)),
-          ),
+          // Caret needs to sit in right half of the last line in the paragraph.
+          initialSelection: TextNode.caretAt(["1"], 37),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -194,9 +174,7 @@ void main() {
       testWidgets("upstream block caret moves to text node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -211,9 +189,7 @@ void main() {
       testWidgets("downstream block caret moves to text node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -228,9 +204,7 @@ void main() {
       testWidgets("right arrow moves caret to text node below", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -248,9 +222,7 @@ void main() {
       testWidgets("right arrow moves caret downstream", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -265,9 +237,7 @@ void main() {
       testWidgets("left arrow moves caret upstream", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -287,24 +257,15 @@ void main() {
             .withEditorSize(const Size(300, 300))
             .pump();
 
-        await tester.doubleTapAtDocumentPosition(const DocumentPosition(
-          nodeId: "2",
-          nodePosition: UpstreamDownstreamNodePosition.upstream(),
+        await tester.doubleTapAtDocumentPosition(DocumentPosition(
+          documentPath: NodePath.forNode("2"),
+          nodePosition: const UpstreamDownstreamNodePosition.upstream(),
         ));
         await tester.pump(kTapMinTime + const Duration(milliseconds: 1));
 
         expect(
           SuperEditorInspector.findDocumentSelection(),
-          const DocumentSelection(
-            base: DocumentPosition(
-              nodeId: "2",
-              nodePosition: UpstreamDownstreamNodePosition.upstream(),
-            ),
-            extent: DocumentPosition(
-              nodeId: "2",
-              nodePosition: UpstreamDownstreamNodePosition.downstream(),
-            ),
-          ),
+          BlockNode.selectNodeInDoc(["2"]),
         );
 
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -322,9 +283,7 @@ void main() {
       testWidgets("backspace moves caret to node above when caret is on upstream edge", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -339,9 +298,7 @@ void main() {
       testWidgets("backspace removes block node when caret is on downstream edge", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -356,9 +313,7 @@ void main() {
       testWidgets("delete moves caret to node below when caret is at downstream edge", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -373,9 +328,7 @@ void main() {
       testWidgets("delete removes block node when caret is at upstream edge", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -390,10 +343,7 @@ void main() {
       testWidgets("backspace removes block node when selected", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
-            base: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-            extent: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.selectNodeInDoc(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -408,10 +358,7 @@ void main() {
       testWidgets("delete removes block node when selected", (tester) async {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
-            base: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-            extent: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.selectNodeInDoc(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -427,8 +374,9 @@ void main() {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
           initialSelection: const DocumentSelection(
-            base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 20)),
-            extent: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.downstream()),
+            base: DocumentPosition(documentPath: NodePath(["1"]), nodePosition: TextNodePosition(offset: 20)),
+            extent: DocumentPosition(
+                documentPath: NodePath(["2"]), nodePosition: UpstreamDownstreamNodePosition.downstream()),
           ),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
@@ -446,8 +394,9 @@ void main() {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
           initialSelection: const DocumentSelection(
-            base: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-            extent: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 20)),
+            base: DocumentPosition(
+                documentPath: NodePath(["2"]), nodePosition: UpstreamDownstreamNodePosition.upstream()),
+            extent: DocumentPosition(documentPath: NodePath(["3"]), nodePosition: TextNodePosition(offset: 20)),
           ),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
@@ -465,8 +414,8 @@ void main() {
         final document = paragraphThenHrThenParagraphDoc();
         final composer = MutableDocumentComposer(
           initialSelection: const DocumentSelection(
-            base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 20)),
-            extent: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 20)),
+            base: DocumentPosition(documentPath: NodePath(["1"]), nodePosition: TextNodePosition(offset: 20)),
+            extent: DocumentPosition(documentPath: NodePath(["3"]), nodePosition: TextNodePosition(offset: 20)),
           ),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
@@ -483,9 +432,7 @@ void main() {
       testWidgets("backspace does nothing at beginning of document", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -500,9 +447,7 @@ void main() {
       testWidgets("delete does nothing at end of document", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -519,9 +464,7 @@ void main() {
       testWidgets("newline inserts paragraph before block", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -538,9 +481,7 @@ void main() {
       testWidgets("newline inserts paragraph after block", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -559,9 +500,7 @@ void main() {
       testWidgets("inserts paragraph before upstream edge", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -578,9 +517,7 @@ void main() {
       testWidgets("inserts paragraph after downstream edge", (tester) async {
         final document = singleBlockDoc();
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: UpstreamDownstreamNodePosition.downstream()),
-          ),
+          initialSelection: BlockNode.caretAtDownstreamEdge(["1"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 
@@ -602,9 +539,7 @@ void main() {
           ],
         );
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "2", nodePosition: UpstreamDownstreamNodePosition.upstream()),
-          ),
+          initialSelection: BlockNode.caretAtUpstreamEdge(["2"]),
         );
         await tester.pumpWidget(_buildHardwareKeyboardEditor(document, composer));
 

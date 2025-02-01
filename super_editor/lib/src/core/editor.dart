@@ -1122,6 +1122,54 @@ class MutableDocument with Iterable<DocumentNode> implements Document, Editable 
   }
 
   @override
+  DocumentNode? getNodeAtPath(NodePath path) {
+    return _nodesById[path.targetNodeId];
+  }
+
+  @override
+  int getNodeIndexInParent(String nodeId) {
+    final nodePath = getPathByNodeId(nodeId)!;
+    if (nodePath.depth == 0) {
+      // This is a root node. Return its index in the root list.
+      return _nodes.indexWhere((node) => node.id == nodeId);
+    }
+
+    // This node has a parent. Find the parent and then find the child index.
+    final parentNodeId = nodePath.atDepth(nodePath.depth - 1);
+    final parentNode = getNodeById(parentNodeId)!;
+    return (parentNode as CompositeDocumentNode).nodes.toList().indexWhere((node) => node.id == nodeId);
+  }
+
+  @override
+  NodePath? getPathByNodeId(String nodeId) {
+    // FIXME: Instead of crawling the tree every call, create a cache that takes
+    //        a node ID as the key, and holds each node's path as the value.
+
+    final queue = <(NodePath, List<DocumentNode>)>[
+      (const NodePath([]), [..._nodes])
+    ];
+    while (queue.isNotEmpty) {
+      final (parentNodePath, children) = queue.removeAt(0);
+
+      for (final child in children) {
+        if (child.id == nodeId) {
+          // This `child` is the node we're searching for. It's path is its
+          // parent path + itself.
+          return parentNodePath.addSubPath(nodeId);
+        }
+
+        if (child is CompositeDocumentNode) {
+          // This child might also have children. Add them to the visit queue.
+          queue.add((parentNodePath.addSubPath(nodeId), [...child.nodes]));
+        }
+      }
+    }
+
+    // We never found the node.
+    return null;
+  }
+
+  @override
   DocumentNode? getNodeAt(int index) {
     if (index < 0 || index >= _nodes.length) {
       return null;
@@ -1174,7 +1222,7 @@ class MutableDocument with Iterable<DocumentNode> implements Document, Editable 
   }
 
   @override
-  DocumentNode? getNode(DocumentPosition position) => getNodeById(position.nodeId);
+  DocumentNode? getNode(DocumentPosition position) => getNodeById(position.documentPath.targetNodeId);
 
   @override
   List<DocumentNode> getNodesInside(DocumentPosition position1, DocumentPosition position2) {

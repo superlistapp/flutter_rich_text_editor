@@ -42,11 +42,11 @@ DocumentSelection? getWordSelection({
   _log.log('getWordSelection', ' - word selection: $wordNodeSelection');
   return DocumentSelection(
     base: DocumentPosition(
-      nodeId: docPosition.nodeId,
+      documentPath: docPosition.documentPath,
       nodePosition: wordNodeSelection.base,
     ),
     extent: DocumentPosition(
-      nodeId: docPosition.nodeId,
+      documentPath: docPosition.documentPath,
       nodePosition: wordNodeSelection.extent,
     ),
   );
@@ -105,11 +105,11 @@ DocumentSelection? getParagraphSelection({
 
   return DocumentSelection(
     base: DocumentPosition(
-      nodeId: docPosition.nodeId,
+      documentPath: docPosition.documentPath,
       nodePosition: paragraphNodeSelection.base,
     ),
     extent: DocumentPosition(
-      nodeId: docPosition.nodeId,
+      documentPath: docPosition.documentPath,
       nodePosition: paragraphNodeSelection.extent,
     ),
   );

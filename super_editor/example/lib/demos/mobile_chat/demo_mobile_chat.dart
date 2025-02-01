@@ -78,7 +78,7 @@ class _MobileChatDemoState extends State<MobileChatDemo> {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: document.last.id,
+            documentPath: NodePath.forNode(document.last.id),
             nodePosition: document.last.endPosition,
           ),
         ),

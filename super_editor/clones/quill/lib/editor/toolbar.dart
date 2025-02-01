@@ -160,7 +160,8 @@ class _FormattingToolbarState extends State<FormattingToolbar> {
     final selectionEnd = max(baseOffset, extentOffset);
     final selectionRange = TextRange(start: selectionStart, end: selectionEnd - 1);
 
-    final textNode = widget.editor.document.getNodeById(selection.extent.nodeId) as TextNode;
+    final textNodePath = selection.extent.documentPath;
+    final textNode = widget.editor.document.getNodeById(textNodePath.targetNodeId) as TextNode;
     final text = textNode.text;
 
     final trimmedRange = _trimTextRangeWhitespace(text, selectionRange);
@@ -171,11 +172,11 @@ class _FormattingToolbarState extends State<FormattingToolbar> {
       AddTextAttributionsRequest(
         documentRange: DocumentRange(
           start: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: textNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.start),
           ),
           end: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: textNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.end),
           ),
         ),
@@ -249,7 +250,7 @@ class _FormattingToolbarState extends State<FormattingToolbar> {
       return;
     }
 
-    final extentNode = _document.getNodeById(selection.extent.nodeId);
+    final extentNode = _document.getNodeById(selection.extent.targetNodeId);
     if (extentNode is! TextNode) {
       return;
     }
@@ -275,7 +276,7 @@ class _FormattingToolbarState extends State<FormattingToolbar> {
       return;
     }
 
-    final extentNode = _document.getNodeById(selection.extent.nodeId);
+    final extentNode = _document.getNodeById(selection.extent.targetNodeId);
     if (extentNode is! TextNode) {
       return;
     }
@@ -301,7 +302,7 @@ class _FormattingToolbarState extends State<FormattingToolbar> {
     DocumentNode? extentNode;
     FeatherTextBlock? selectedBlockFormat;
     if (selection != null) {
-      extentNode = _document.getNodeById(selection.extent.nodeId);
+      extentNode = _document.getNodeById(selection.extent.targetNodeId);
       if (extentNode is TextNode) {
         selectedBlockFormat =
             selection.base.nodeId == selection.extent.nodeId ? FeatherTextBlock.fromNode(extentNode) : null;
@@ -702,7 +703,7 @@ class _NamedTextSizeSelectorState extends State<_NamedTextSizeSelector> {
       return;
     }
 
-    final selectedNode = widget.editor.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.editor.document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode is! TextNode) {
       return;
     }
@@ -834,7 +835,7 @@ class _HeaderSelectorState extends State<_HeaderSelector> {
       return;
     }
 
-    final selectedNode = widget.editor.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.editor.document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode is! TextNode) {
       return;
     }
@@ -853,7 +854,7 @@ class _HeaderSelectorState extends State<_HeaderSelector> {
     final selection = composer.selection;
     var selectedHeaderLevel = "Normal";
     if (selection != null && selection.base.nodeId == selection.extent.nodeId) {
-      final selectedNode = widget.editor.document.getNodeById(selection.extent.nodeId);
+      final selectedNode = widget.editor.document.getNodeById(selection.extent.targetNodeId);
       if (selectedNode is ParagraphNode) {
         selectedHeaderLevel = _headerLevelNames[selectedNode.getMetadataValue("blockType")] ?? "Normal";
       }
@@ -1185,7 +1186,7 @@ class _AlignmentButtonState extends State<_AlignmentButton> {
 
         widget.editor.execute([
           ChangeParagraphAlignmentRequest(
-            nodeId: selection.extent.nodeId,
+            nodeId: selection.extent.targetNodeId,
             alignment: newAlignment,
           ),
         ]);
@@ -1219,7 +1220,7 @@ class _AlignmentButtonState extends State<_AlignmentButton> {
     }
 
     final document = widget.editor.document;
-    final selectedNode = document.getNodeById(selection.extent.nodeId);
+    final selectedNode = document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode == null) {
       // Default to "left" when there's no selection. This only effects the
       // icon that's displayed on the toolbar.

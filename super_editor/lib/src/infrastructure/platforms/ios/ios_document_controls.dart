@@ -724,7 +724,7 @@ class IosControlsDocumentLayerState extends DocumentLayoutLayerState<IosHandlesD
     final rectForSelection = widget.documentLayout.getRectForSelection(
       position,
       DocumentPosition(
-        nodeId: position.nodeId,
+        documentPath: position.documentPath,
         nodePosition: extentNodePosition,
       ),
     )!;

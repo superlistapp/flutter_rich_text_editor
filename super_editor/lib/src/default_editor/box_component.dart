@@ -17,6 +17,62 @@ final _log = Logger(scope: 'box_component.dart');
 /// Base implementation for a [DocumentNode] that only supports [UpstreamDownstreamNodeSelection]s.
 @immutable
 abstract class BlockNode extends DocumentNode {
+  /// A factory method for a collapsed [DocumentSelection] within a [BlockNode]
+  /// at the given [nodePath], on the upstream edge.
+  ///
+  /// This factory is provided as a convenience for less verbose code.
+  static DocumentSelection caretAtUpstreamEdge(List<String> nodePath) {
+    return DocumentSelection.collapsed(
+      position: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: const UpstreamDownstreamNodePosition.upstream(),
+      ),
+    );
+  }
+
+  /// A factory method for a collapsed [DocumentSelection] within a [BlockNode]
+  /// at the given [nodePath], on the downstream edge.
+  ///
+  /// This factory is provided as a convenience for less verbose code.
+  static DocumentSelection caretAtDownstreamEdge(List<String> nodePath) {
+    return DocumentSelection.collapsed(
+      position: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: const UpstreamDownstreamNodePosition.downstream(),
+      ),
+    );
+  }
+
+  /// A factory method for a collapsed [DocumentSelection] within a [BlockNode]
+  /// at the given [nodePath], on the edge with the given [affinity].
+  ///
+  /// This factory is provided as a convenience for less verbose code.
+  static DocumentSelection caretAtEdge(List<String> nodePath, TextAffinity affinity) {
+    return DocumentSelection.collapsed(
+      position: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: UpstreamDownstreamNodePosition(affinity),
+      ),
+    );
+  }
+
+  /// A factory method for a [DocumentSelection] that contains all of the
+  /// [BlockNode] at the given [nodePath].
+  ///
+  /// This factory is provided as a convenience for less verbose code.
+  static DocumentSelection selectNodeInDoc(List<String> nodePath) {
+    return DocumentSelection(
+      base: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: const UpstreamDownstreamNodePosition.upstream(),
+      ),
+      extent: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: const UpstreamDownstreamNodePosition.downstream(),
+      ),
+    );
+  }
+
   BlockNode({
     Map<String, dynamic>? metadata,
   }) : super(metadata: metadata);
@@ -332,14 +388,19 @@ class DeleteUpstreamAtBeginningOfBlockNodeCommand extends EditCommand {
     final composer = context.find<MutableDocumentComposer>(Editor.composerKey);
     final documentLayoutEditable = context.find<DocumentLayoutEditable>(Editor.layoutKey);
 
-    final deletionPosition = DocumentPosition(nodeId: node.id, nodePosition: node.beginningPosition);
+    final deletionPosition = DocumentPosition(
+      documentPath: document.getPathByNodeId(node.id)!,
+      nodePosition: node.beginningPosition,
+    );
 
     final nodePosition = deletionPosition.nodePosition as UpstreamDownstreamNodePosition;
     if (nodePosition.affinity == TextAffinity.downstream) {
       // The caret is sitting on the downstream edge of block-level content. Delete the
       // whole block by replacing it with an empty paragraph.
       executor.executeCommand(
-        ReplaceNodeWithEmptyParagraphWithCaretCommand(nodeId: deletionPosition.nodeId),
+        ReplaceNodeWithEmptyParagraphWithCaretCommand(
+          nodeId: deletionPosition.documentPath.targetNodeId,
+        ),
       );
       return;
     }
@@ -382,7 +443,7 @@ class DeleteUpstreamAtBeginningOfBlockNodeCommand extends EditCommand {
       return;
     }
 
-    final node = document.getNodeById(composer.selection!.extent.nodeId);
+    final node = document.getNodeById(composer.selection!.extent.documentPath.targetNodeId);
     if (node == null) {
       return;
     }
@@ -396,7 +457,7 @@ class DeleteUpstreamAtBeginningOfBlockNodeCommand extends EditCommand {
       ChangeSelectionCommand(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: nodeBefore.id,
+            documentPath: document.getPathByNodeId(nodeBefore.id)!,
             nodePosition: nodeBefore.endPosition,
           ),
         ),

@@ -45,12 +45,7 @@ void main() {
         expect(
           SuperEditorInspector.findDocumentSelection(),
           selectionEquivalentTo(
-            DocumentSelection.collapsed(
-              position: DocumentPosition(
-                nodeId: document.last.id,
-                nodePosition: const TextNodePosition(offset: 0),
-              ),
-            ),
+            TextNode.caretAt([document.last.id], 0),
           ),
         );
       });
@@ -89,12 +84,7 @@ void main() {
         expect(
           SuperEditorInspector.findDocumentSelection(),
           selectionEquivalentTo(
-            const DocumentSelection.collapsed(
-              position: DocumentPosition(
-                nodeId: '1',
-                nodePosition: TextNodePosition(offset: 15),
-              ),
-            ),
+            TextNode.caretAt(["1"], 15),
           ),
         );
       });

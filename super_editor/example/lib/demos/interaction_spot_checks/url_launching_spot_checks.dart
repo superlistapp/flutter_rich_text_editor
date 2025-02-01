@@ -63,7 +63,7 @@ obsidian://open?vault=my-vault
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: _editor.document.last.id,
+            documentPath: NodePath.forNode(_editor.document.last.id),
             nodePosition: (_editor.document.last as TextNode).endPosition,
           ),
         ),

@@ -152,7 +152,11 @@ class ListItemComponentBuilder implements ComponentBuilder {
   const ListItemComponentBuilder();
 
   @override
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     if (node is! ListItemNode) {
       return null;
     }
@@ -1081,7 +1085,7 @@ class InsertNewlineInListItemAtCaretCommand extends BaseInsertNewlineAtCaretComm
         ChangeSelectionCommand(
           DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: newNodeId,
+              documentPath: context.document.getPathByNodeId(newNodeId)!,
               nodePosition: const TextNodePosition(offset: 0),
             ),
           ),

@@ -31,7 +31,7 @@ class _MarketingVideoState extends State<MarketingVideo> {
     _composer = MutableDocumentComposer(
       initialSelection: DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: _document.first.id,
+          documentPath: _document.getPathByNodeId(_document.first.id)!,
           nodePosition: _document.first.endPosition,
         ),
       ),
@@ -305,16 +305,7 @@ class DocumentEditingRobot {
         () {
           _editor.execute([
             ChangeSelectionRequest(
-              DocumentSelection(
-                base: DocumentPosition(
-                  nodeId: _document.first.id,
-                  nodePosition: _document.first.beginningPosition,
-                ),
-                extent: DocumentPosition(
-                  nodeId: _document.last.id,
-                  nodePosition: _document.last.endPosition,
-                ),
-              ),
+              _document.selectAll(),
               SelectionChangeType.expandSelection,
               SelectionReason.userInteraction,
             ),

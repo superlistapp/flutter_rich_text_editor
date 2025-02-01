@@ -63,7 +63,7 @@ class _MobileEditingAndroidDemoState extends State<MobileEditingAndroidDemo> {
       return;
     }
 
-    final selectedNode = _doc.getNodeById(_composer.selection!.extent.nodeId);
+    final selectedNode = _doc.getNodeById(_composer.selection!.extent.targetNodeId);
     if (selectedNode is ListItemNode) {
       setState(() {
         _imeConfiguration = _imeConfiguration.copyWith(

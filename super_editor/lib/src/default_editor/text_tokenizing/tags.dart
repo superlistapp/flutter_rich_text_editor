@@ -260,7 +260,15 @@ class TagRule {
 /// responsibility to monitor the attribution bounds and keep them in sync with the content.
 /// The [IndexedTag] data structure is a tool that makes such management easier.
 class IndexedTag {
-  const IndexedTag(this.tag, this.nodeId, this.startOffset);
+  IndexedTag(
+    this.tag,
+    String? nodeId,
+    this.startOffset, {
+    NodePath? nodePath,
+  })  : assert(nodeId != null || nodePath != null, "You must provide a nodeId or a nodePath"),
+        assert(nodeId == null || nodePath == null, "You can provide a nodeId or a nodePath, but not both"),
+        nodeId = nodeId ?? nodePath!.targetNodeId,
+        nodePath = nodePath ?? NodePath.forNode(nodeId!);
 
   /// The plain-text tag value.
   final Tag tag;
@@ -268,17 +276,22 @@ class IndexedTag {
   /// The node ID of the [TextNode] that contains this tag.
   final String nodeId;
 
+  /// The path in the `Document` from the root to the node that contains this tag.
+  final NodePath nodePath;
+
   /// The text offset of the trigger symbol for this tag within the given [TextNode].
   final int startOffset;
 
   /// The fully-specified [DocumentPosition] associated with the tag's [startOffset].
-  DocumentPosition get start => DocumentPosition(nodeId: nodeId, nodePosition: TextNodePosition(offset: startOffset));
+  DocumentPosition get start =>
+      DocumentPosition(documentPath: nodePath, nodePosition: TextNodePosition(offset: startOffset));
 
   /// The text offset immediately after the final character in this tag, within the given [TextNode].
   int get endOffset => startOffset + tag.raw.length;
 
   /// The fully-specified [DocumentPosition] associated with the tag's [endOffset].
-  DocumentPosition get end => DocumentPosition(nodeId: nodeId, nodePosition: TextNodePosition(offset: endOffset));
+  DocumentPosition get end =>
+      DocumentPosition(documentPath: nodePath, nodePosition: TextNodePosition(offset: endOffset));
 
   /// The [DocumentRange] from [start] to [end].
   DocumentRange get range => DocumentRange(start: start, end: end);

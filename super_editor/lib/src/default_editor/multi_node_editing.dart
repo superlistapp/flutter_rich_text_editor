@@ -84,7 +84,7 @@ class PasteStructuredContentEditorCommand extends EditCommand {
         ChangeSelectionCommand(
           DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: pastePosition.nodeId,
+              documentPath: pastePosition.documentPath,
               nodePosition: TextNodePosition(
                   offset: (pastePosition.nodePosition as TextNodePosition).offset + pastedNode.text.length),
             ),
@@ -116,7 +116,7 @@ class PasteStructuredContentEditorCommand extends EditCommand {
       ChangeSelectionCommand(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: pastedNode.id,
+            documentPath: pastePosition.documentPath,
             nodePosition: pastedNode.endPosition,
           ),
         ),
@@ -182,7 +182,7 @@ class PasteStructuredContentEditorCommand extends EditCommand {
         executor.executeCommand(
           InsertAttributedTextCommand(
             documentPosition: DocumentPosition(
-              nodeId: downstreamSplitNode.id,
+              documentPath: document.getPathByNodeId(downstreamSplitNode.id)!,
               nodePosition: const TextNodePosition(offset: 0),
             ),
             // Only text nodes are merge-able, therefore we know that the last pasted node
@@ -227,7 +227,7 @@ class PasteStructuredContentEditorCommand extends EditCommand {
       ChangeSelectionCommand(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: previousNode.id,
+            documentPath: document.getPathByNodeId(previousNode.id)!,
             nodePosition: previousNode.endPosition,
           ),
         ),
@@ -421,7 +421,7 @@ class InsertNodeAtCaretCommand extends EditCommand {
 
       newSelection = DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: selectedNodeId,
+          documentPath: document.getPathByNodeId(selectedNodeId)!,
           nodePosition: selectedNode.beginningPosition,
         ),
       );
@@ -436,7 +436,7 @@ class InsertNodeAtCaretCommand extends EditCommand {
 
       newSelection = DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: selectedNode.id,
+          documentPath: document.getPathByNodeId(selectedNode.id)!,
           nodePosition: selectedNode.beginningPosition,
         ),
       );
@@ -458,7 +458,7 @@ class InsertNodeAtCaretCommand extends EditCommand {
 
       newSelection = DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: emptyParagraph.id,
+          documentPath: document.getPathByNodeId(emptyParagraph.id)!,
           nodePosition: emptyParagraph.endPosition,
         ),
       );
@@ -488,7 +488,7 @@ class InsertNodeAtCaretCommand extends EditCommand {
 
       newSelection = DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: newParagraph.id,
+          documentPath: document.getPathByNodeId(newParagraph.id)!,
           nodePosition: newParagraph.beginningPosition,
         ),
       );
@@ -661,7 +661,7 @@ class ReplaceNodeWithEmptyParagraphWithCaretCommand extends EditCommand {
     executor.executeCommand(ChangeSelectionCommand(
       DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: newNode.id,
+          documentPath: document.getPathByNodeId(newNode.id)!,
           nodePosition: newNode.beginningPosition,
         ),
       ),
@@ -714,7 +714,7 @@ class DeleteContentCommand extends EditCommand {
             ChangeSelectionCommand(
               DocumentSelection.collapsed(
                 position: DocumentPosition(
-                  nodeId: nodes.first.id,
+                  documentPath: document.getPathByNodeId(nodes.first.id)!,
                   nodePosition: nodes.first.endPosition,
                 ),
               ),
@@ -1180,7 +1180,7 @@ class DeleteSelectionCommand extends EditCommand {
             ChangeSelectionCommand(
               DocumentSelection.collapsed(
                 position: DocumentPosition(
-                  nodeId: node.id,
+                  documentPath: document.getPathByNodeId(node.id)!,
                   nodePosition: node.endPosition,
                 ),
               ),
@@ -1369,7 +1369,7 @@ class ClearDocumentCommand extends EditCommand {
         ChangeSelectionCommand(
           DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: newNodeId,
+              documentPath: document.getPathByNodeId(newNodeId)!,
               nodePosition: const TextNodePosition(offset: 0),
             ),
           ),

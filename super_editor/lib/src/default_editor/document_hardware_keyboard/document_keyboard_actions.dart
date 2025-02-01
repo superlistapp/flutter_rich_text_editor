@@ -451,7 +451,7 @@ ExecutionInstruction mergeNodeWithNextWhenDeleteIsPressed({
     return ExecutionInstruction.continueExecution;
   }
 
-  final node = editContext.document.getNodeById(editContext.composer.selection!.extent.nodeId);
+  final node = editContext.document.getNodeAtPath(editContext.composer.selection!.extent.documentPath);
   if (node is! TextNode) {
     return ExecutionInstruction.continueExecution;
   }
@@ -476,7 +476,7 @@ ExecutionInstruction mergeNodeWithNextWhenDeleteIsPressed({
     ChangeSelectionRequest(
       DocumentSelection.collapsed(
         position: DocumentPosition(
-          nodeId: node.id,
+          documentPath: editContext.document.getPathByNodeId(nextNode.id)!,
           nodePosition: TextNodePosition(offset: currentParagraphLength),
         ),
       ),

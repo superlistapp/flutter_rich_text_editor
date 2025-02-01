@@ -308,11 +308,11 @@ extension InspectDocumentAffinity on Document {
     return getAffinityForSelection(
       DocumentSelection(
         base: DocumentPosition(
-          nodeId: base.id,
+          documentPath: getPathByNodeId(base.id)!,
           nodePosition: base.beginningPosition,
         ),
         extent: DocumentPosition(
-          nodeId: extent.id,
+          documentPath: getPathByNodeId(extent.id)!,
           nodePosition: extent.beginningPosition,
         ),
       ),
@@ -335,18 +335,83 @@ extension InspectDocumentAffinity on Document {
       throw Exception('No such position in document: $extent');
     }
 
-    late TextAffinity affinity;
-    if (base.nodeId != extent.nodeId) {
-      affinity = getNodeIndexById(base.nodeId) < getNodeIndexById(extent.nodeId)
+    // A document is a tree, but it's a tree where every position in that tree has
+    // a conceptual downstream and upstream direction.
+    //
+    // In the nominal case, we're dealing with a couple of top-level nodes. In that
+    // case, whichever node comes first in the root node list is the upstream node.
+    //
+    // The more complicated case is when one or both of the nodes are sub-nodes of
+    // other nodes. In that scenario, the nodes might have an ancestor/descendant
+    // relationship, sibling relationship, or cousin relationship.
+    //
+    // The following examples demonstrate how we define affinity.
+    //
+    // Root siblings:
+    //
+    //    Document
+    //    > 1: Upstream
+    //    > 2: ...
+    //    > 3: ...
+    //    > 4: Downstream
+    //
+    // Descendant siblings:
+    //
+    //    Document
+    //    > 1:
+    //      > 1.1: Upstream
+    //      > 1.2: ...
+    //      > 1.3: Downstream
+    //    > 2:
+    //
+    // Cousins:
+    //
+    //    Document
+    //    > 1:
+    //      > 1.1: Upstream
+    //    > 2:
+    //      > 2.1:
+    //        > 2.1.1: Downstream
+    //
+    // Ancestor/Descendant:
+    //
+    //    Document
+    //    > 1: Upstream
+    //      > 1.1: Downstream
+    //
+    // To determine affinity, we do a level-by-level position comparison
+    // between the two node paths. I.e., we compare their top-level node
+    // positions. If those are equal, we compare their 2nd level node positions.
+    // Etc. If at any point the node positions aren't equal, the path with
+    // the upstream node position is marked upstream, and the other downstream.
+    //
+    // If, during the level-by-level path comparison, one path runs out of nodes
+    // before the other, then we have an ancestor/descendant relationship, in which
+    // case the ancestor is marked as upstream, and the descendant is marked as downstream.
+
+    int depth = 0;
+    do {
+      final baseIndex = getNodeIndexInParent(base.documentPath.atDepth(depth));
+      final extentIndex = getNodeIndexInParent(extent.documentPath.atDepth(depth));
+      if (baseIndex < extentIndex) {
+        return TextAffinity.downstream;
+      }
+      if (extentIndex < baseIndex) {
+        return TextAffinity.upstream;
+      }
+
+      depth += 1;
+    } while (depth < base.documentPath.depth && depth < extent.documentPath.depth);
+
+    if (base.documentPath.depth != extent.documentPath.depth) {
+      // One of these nodes is a descendant of the other.
+      return base.documentPath.depth < extent.documentPath.depth //
           ? TextAffinity.downstream
           : TextAffinity.upstream;
-    } else {
-      // The selection is within the same node. Ask the node which position
-      // comes first.
-      affinity = extentNode.getAffinityBetween(base: base.nodePosition, extent: extent.nodePosition);
     }
 
-    return affinity;
+    // These paths point to the same node. Defer to node affinity.
+    return extentNode.getAffinityBetween(base: base.nodePosition, extent: extent.nodePosition);
   }
 }
 
@@ -363,6 +428,19 @@ extension InspectDocumentRange on Document {
 }
 
 extension InspectDocumentSelection on Document {
+  DocumentSelection selectAll() {
+    return DocumentSelection(
+      base: DocumentPosition(
+        documentPath: NodePath.forNode(first.id),
+        nodePosition: first.beginningPosition,
+      ),
+      extent: DocumentPosition(
+        documentPath: NodePath.forNode(last.id),
+        nodePosition: first.endPosition,
+      ),
+    );
+  }
+
   /// Returns a list of all the `DocumentNodes` within the given [selection], ordered
   /// from upstream to downstream.
   List<DocumentNode> getNodesInContentOrder(DocumentSelection selection) {
@@ -384,7 +462,7 @@ extension InspectDocumentSelection on Document {
 
     // Both document positions are in the same node. Figure out which
     // node position comes first.
-    final theNode = getNodeById(docPosition1.nodeId)!;
+    final theNode = getNodeById(docPosition1.targetNodeId)!;
     return theNode.selectUpstreamPosition(docPosition1.nodePosition, docPosition2.nodePosition) ==
             docPosition1.nodePosition
         ? docPosition1

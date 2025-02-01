@@ -113,16 +113,7 @@ class _SuperReaderDemoState extends State<SuperReaderDemo> {
       return;
     }
 
-    _selection.value = DocumentSelection(
-      base: DocumentPosition(
-        nodeId: _document.first.id,
-        nodePosition: _document.first.beginningPosition,
-      ),
-      extent: DocumentPosition(
-        nodeId: _document.last.id,
-        nodePosition: _document.last.endPosition,
-      ),
-    );
+    _selection.value = _document.selectAll();
   }
 
   @override

@@ -25,12 +25,7 @@ void main() {
 
       test('executes a single command', () {
         final editorPieces = _createStandardEditor(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         List<EditEvent>? changeLog;
         editorPieces.editor.addListener(FunctionalEditListener((changeList) {
@@ -48,12 +43,7 @@ void main() {
 
       test('executes a series of commands', () {
         final editorPieces = _createStandardEditor(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         int changeLogCount = 0;
         int changeEventCount = 0;
@@ -82,12 +72,7 @@ void main() {
         final document = MutableDocument.empty();
 
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         final editor = Editor(
           editables: {
@@ -149,12 +134,7 @@ void main() {
         final document = MutableDocument.empty("1");
 
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         final editor = Editor(
           editables: {
@@ -173,9 +153,9 @@ void main() {
 
         editor.execute([
           InsertTextRequest(
-            documentPosition: const DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
+            documentPosition: DocumentPosition(
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 0),
             ),
             textToInsert: "H",
             attributions: const {},
@@ -190,12 +170,7 @@ void main() {
         final document = MutableDocument.empty("1");
 
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         final editor = Editor(
@@ -227,7 +202,7 @@ void main() {
               requestDispatcher.execute([
                 InsertTextRequest(
                   documentPosition: DocumentPosition(
-                    nodeId: insertEEvent.nodeId,
+                    documentPath: NodePath.forNode(insertEEvent.nodeId),
                     nodePosition: TextNodePosition(offset: insertEEvent.offset + 1), // +1 for "e"
                   ),
                   textToInsert: "ll",
@@ -241,9 +216,9 @@ void main() {
         editor
           ..execute([
             InsertTextRequest(
-              documentPosition: const DocumentPosition(
-                nodeId: "1",
-                nodePosition: TextNodePosition(offset: 0),
+              documentPosition: DocumentPosition(
+                documentPath: NodePath.forNode("1"),
+                nodePosition: const TextNodePosition(offset: 0),
               ),
               textToInsert: "H",
               attributions: const {},
@@ -251,9 +226,9 @@ void main() {
           ])
           ..execute([
             InsertTextRequest(
-              documentPosition: const DocumentPosition(
-                nodeId: "1",
-                nodePosition: TextNodePosition(offset: 1),
+              documentPosition: DocumentPosition(
+                documentPath: NodePath.forNode("1"),
+                nodePosition: const TextNodePosition(offset: 1),
               ),
               textToInsert: "e",
               attributions: const {},
@@ -261,9 +236,9 @@ void main() {
           ])
           ..execute([
             InsertTextRequest(
-              documentPosition: const DocumentPosition(
-                nodeId: "1",
-                nodePosition: TextNodePosition(offset: 4),
+              documentPosition: DocumentPosition(
+                documentPath: NodePath.forNode("1"),
+                nodePosition: const TextNodePosition(offset: 4),
               ),
               textToInsert: "o",
               attributions: const {},
@@ -278,12 +253,7 @@ void main() {
         final document = MutableDocument.empty("1");
 
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         final editor = Editor(
@@ -316,7 +286,7 @@ void main() {
               requestDispatcher.execute([
                 InsertTextRequest(
                   documentPosition: DocumentPosition(
-                    nodeId: insertHEvent.nodeId,
+                    documentPath: NodePath.forNode(insertHEvent.nodeId),
                     nodePosition: TextNodePosition(offset: insertHEvent.offset),
                   ),
                   textToInsert: "e",
@@ -346,9 +316,9 @@ void main() {
 
         editor.execute([
           InsertTextRequest(
-            documentPosition: const DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
+            documentPosition: DocumentPosition(
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 0),
             ),
             textToInsert: "H",
             attributions: const {},
@@ -362,12 +332,7 @@ void main() {
         final document = MutableDocument.empty("1");
 
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         int reactionRunCount = 0;
@@ -389,17 +354,17 @@ void main() {
               // Insert "e" after "H".
               requestDispatcher.execute([
                 InsertTextRequest(
-                  documentPosition: const DocumentPosition(
-                    nodeId: "1",
-                    nodePosition: TextNodePosition(offset: 1),
+                  documentPosition: DocumentPosition(
+                    documentPath: NodePath.forNode("1"),
+                    nodePosition: const TextNodePosition(offset: 1),
                   ),
                   textToInsert: "e",
                   attributions: {},
                 ),
                 InsertTextRequest(
-                  documentPosition: const DocumentPosition(
-                    nodeId: "1",
-                    nodePosition: TextNodePosition(offset: 2),
+                  documentPosition: DocumentPosition(
+                    documentPath: NodePath.forNode("1"),
+                    nodePosition: const TextNodePosition(offset: 2),
                   ),
                   textToInsert: "l",
                   attributions: {},
@@ -411,9 +376,9 @@ void main() {
 
         editor.execute([
           InsertTextRequest(
-            documentPosition: const DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
+            documentPosition: DocumentPosition(
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 0),
             ),
             textToInsert: "H",
             attributions: const {},
@@ -426,33 +391,23 @@ void main() {
 
       test('inserts character at caret', () {
         final editorPieces = _createStandardEditor(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         editorPieces.editor
           ..execute([
             InsertTextRequest(
-              documentPosition: const DocumentPosition(
-                nodeId: "1",
-                nodePosition: TextNodePosition(offset: 0),
+              documentPosition: DocumentPosition(
+                documentPath: NodePath.forNode("1"),
+                nodePosition: const TextNodePosition(offset: 0),
               ),
               textToInsert: 'H',
               attributions: const {},
             ),
           ])
           ..execute([
-            const ChangeSelectionRequest(
-              DocumentSelection.collapsed(
-                position: DocumentPosition(
-                  nodeId: "1",
-                  nodePosition: TextNodePosition(offset: 1),
-                ),
-              ),
+            ChangeSelectionRequest(
+              TextNode.caretAt(["1"], 1),
               SelectionChangeType.placeCaret,
               "test",
             ),
@@ -463,23 +418,13 @@ void main() {
         expect(editorPieces.composer.selection, isNotNull);
         expect(
           editorPieces.composer.selection,
-          const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 1),
-            ),
-          ),
+          TextNode.caretAt(["1"], 1),
         );
       });
 
       test('inserts new paragraph node at caret', () {
         final editorPieces = _createStandardEditor(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         int changeLogCount = 0;
         int changeEventCount = 0;
@@ -518,12 +463,7 @@ void main() {
       test('moves a document node to a higher index', () {
         final editorPieces = _createStandardEditor(
           initialDocument: longTextDoc(),
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         int changeLogCount = 0;
@@ -564,12 +504,7 @@ void main() {
       test('moves a document node to a lower index', () {
         final editorPieces = _createStandardEditor(
           initialDocument: longTextDoc(),
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
 
         int changeLogCount = 0;
@@ -710,7 +645,7 @@ class _ExpandingCommand extends EditCommand {
     executor.executeCommand(
       InsertTextCommand(
         documentPosition: DocumentPosition(
-          nodeId: paragraph.id,
+          documentPath: NodePath.forNode(paragraph.id),
           nodePosition: TextNodePosition(offset: paragraph.text.length),
         ),
         textToInsert:

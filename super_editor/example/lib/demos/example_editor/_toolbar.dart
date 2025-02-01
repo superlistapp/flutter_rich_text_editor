@@ -115,7 +115,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
       return false;
     }
 
-    final selectedNode = widget.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(selection.extent.targetNodeId);
     return selectedNode is ParagraphNode || selectedNode is ListItemNode;
   }
 
@@ -123,7 +123,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
   ///
   /// Throws an exception if the currently selected node is not a text node.
   _TextType _getCurrentTextType() {
-    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.targetNodeId);
     if (selectedNode is ParagraphNode) {
       final type = selectedNode.getMetadataValue('blockType');
 
@@ -149,7 +149,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
   ///
   /// Throws an exception if the currently selected node is not a text node.
   TextAlign _getCurrentTextAlignment() {
-    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.targetNodeId);
     if (selectedNode is ParagraphNode) {
       final align = selectedNode.getMetadataValue('textAlign');
       switch (align) {
@@ -177,7 +177,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
       return false;
     }
 
-    final selectedNode = widget.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(selection.extent.targetNodeId);
     return selectedNode is ParagraphNode;
   }
 
@@ -197,14 +197,14 @@ class _EditorToolbarState extends State<EditorToolbar> {
     if (_isListItem(existingTextType) && _isListItem(newType)) {
       widget.editor!.execute([
         ChangeListItemTypeRequest(
-          nodeId: widget.composer.selection!.extent.nodeId,
+          nodeId: widget.composer.selection!.extent.targetNodeId,
           newType: newType == _TextType.orderedListItem ? ListItemType.ordered : ListItemType.unordered,
         ),
       ]);
     } else if (_isListItem(existingTextType) && !_isListItem(newType)) {
       widget.editor!.execute([
         ConvertListItemToParagraphRequest(
-          nodeId: widget.composer.selection!.extent.nodeId,
+          nodeId: widget.composer.selection!.extent.targetNodeId,
           paragraphMetadata: {
             'blockType': _getBlockTypeAttribution(newType),
           },
@@ -213,7 +213,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
     } else if (!_isListItem(existingTextType) && _isListItem(newType)) {
       widget.editor!.execute([
         ConvertParagraphToListItemRequest(
-          nodeId: widget.composer.selection!.extent.nodeId,
+          nodeId: widget.composer.selection!.extent.targetNodeId,
           type: newType == _TextType.orderedListItem ? ListItemType.ordered : ListItemType.unordered,
         ),
       ]);
@@ -221,7 +221,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
       // Apply a new block type to an existing paragraph node.
       widget.editor!.execute([
         ChangeParagraphBlockTypeRequest(
-          nodeId: widget.composer.selection!.extent.nodeId,
+          nodeId: widget.composer.selection!.extent.targetNodeId,
           blockType: _getBlockTypeAttribution(newType),
         ),
       ]);
@@ -325,7 +325,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
     final selectionEnd = max(baseOffset, extentOffset);
     final selectionRange = SpanRange(selectionStart, selectionEnd - 1);
 
-    final textNode = widget.document.getNodeById(selection.extent.nodeId) as TextNode;
+    final textNode = widget.document.getNodeById(selection.extent.targetNodeId) as TextNode;
     final text = textNode.text;
 
     final overlappingLinkAttributions = text.getAttributionSpansInRange(
@@ -346,7 +346,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
     final selectionEnd = max(baseOffset, extentOffset);
     final selectionRange = SpanRange(selectionStart, selectionEnd - 1);
 
-    final textNode = widget.document.getNodeById(selection.extent.nodeId) as TextNode;
+    final textNode = widget.document.getNodeById(selection.extent.targetNodeId) as TextNode;
     final text = textNode.text;
 
     final overlappingLinkAttributions = text.getAttributionSpansInRange(
@@ -399,7 +399,8 @@ class _EditorToolbarState extends State<EditorToolbar> {
     final selectionEnd = max(baseOffset, extentOffset);
     final selectionRange = TextRange(start: selectionStart, end: selectionEnd - 1);
 
-    final textNode = widget.document.getNodeById(selection.extent.nodeId) as TextNode;
+    final selectedNodePath = selection.extent.documentPath;
+    final textNode = widget.document.getNodeById(selectedNodePath.targetNodeId) as TextNode;
     final text = textNode.text;
 
     final trimmedRange = _trimTextRangeWhitespace(text, selectionRange);
@@ -410,11 +411,11 @@ class _EditorToolbarState extends State<EditorToolbar> {
       AddTextAttributionsRequest(
         documentRange: DocumentRange(
           start: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: selectedNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.start),
           ),
           end: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: selectedNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.end),
           ),
         ),
@@ -459,7 +460,7 @@ class _EditorToolbarState extends State<EditorToolbar> {
 
     widget.editor!.execute([
       ChangeParagraphAlignmentRequest(
-        nodeId: widget.composer.selection!.extent.nodeId,
+        nodeId: widget.composer.selection!.extent.targetNodeId,
         alignment: newAlignment,
       ),
     ]);
@@ -819,11 +820,11 @@ class ImageFormatToolbar extends StatefulWidget {
 
 class _ImageFormatToolbarState extends State<ImageFormatToolbar> {
   void _makeImageConfined() {
-    widget.setWidth(widget.composer.selection!.extent.nodeId, null);
+    widget.setWidth(widget.composer.selection!.extent.targetNodeId, null);
   }
 
   void _makeImageFullBleed() {
-    widget.setWidth(widget.composer.selection!.extent.nodeId, double.infinity);
+    widget.setWidth(widget.composer.selection!.extent.targetNodeId, double.infinity);
   }
 
   @override

@@ -316,7 +316,7 @@ class ConvertSelectedTextNodeCommand extends EditCommand {
       return;
     }
 
-    final oldNode = document.getNodeById(composer.selection!.extent.nodeId) as TextNode;
+    final oldNode = document.getNodeById(composer.selection!.extent.targetNodeId) as TextNode;
 
     late final TextNode newNode;
     switch (newType) {

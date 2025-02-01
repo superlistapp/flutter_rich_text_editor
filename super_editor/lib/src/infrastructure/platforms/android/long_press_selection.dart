@@ -172,11 +172,11 @@ class AndroidDocumentLongPressSelectionStrategy {
       // Select the whole node.
       _longPressInitialSelection = DocumentSelection(
         base: DocumentPosition(
-          nodeId: docPosition.nodeId,
+          documentPath: docPosition.documentPath,
           nodePosition: const UpstreamDownstreamNodePosition.upstream(),
         ),
         extent: DocumentPosition(
-          nodeId: docPosition.nodeId,
+          documentPath: docPosition.documentPath,
           nodePosition: const UpstreamDownstreamNodePosition.downstream(),
         ),
       );
@@ -392,7 +392,7 @@ class AndroidDocumentLongPressSelectionStrategy {
               ) ==
               TextAffinity.downstream;
       final longPressMostRecentUpstreamWordBoundaryPosition = DocumentPosition(
-        nodeId: _longPressMostRecentBoundaryNodeId!,
+        documentPath: _document.getPathByNodeId(_longPressMostRecentBoundaryNodeId!)!,
         nodePosition: TextNodePosition(offset: _longPressMostRecentUpstreamWordBoundary!),
       );
       final upstreamSelectionX = _docLayout
@@ -436,7 +436,7 @@ class AndroidDocumentLongPressSelectionStrategy {
         // The user is selecting upstream. The end of the current selected word
         // is the upstream bound of the current selection.
         final longPressMostRecentUpstreamWordBoundaryPosition = DocumentPosition(
-          nodeId: _longPressMostRecentBoundaryNodeId!,
+          documentPath: _document.getPathByNodeId(_longPressMostRecentBoundaryNodeId!)!,
           nodePosition: TextNodePosition(offset: _longPressMostRecentUpstreamWordBoundary!),
         );
         final DocumentPosition boundary = longPressMostRecentUpstreamWordBoundaryPosition;
@@ -576,7 +576,7 @@ class AndroidDocumentLongPressSelectionStrategy {
               ) ==
               TextAffinity.downstream;
       final longPressMostRecentDownstreamWordBoundaryPosition = DocumentPosition(
-        nodeId: _longPressMostRecentBoundaryNodeId!,
+        documentPath: _document.getPathByNodeId(_longPressMostRecentBoundaryNodeId!)!,
         nodePosition: TextNodePosition(offset: _longPressMostRecentDownstreamWordBoundary!),
       );
       final downstreamSelectionX = _docLayout
@@ -620,7 +620,7 @@ class AndroidDocumentLongPressSelectionStrategy {
         // The user is selecting downstream. The end of the current selected word
         // is the downstream bound of the current selection.
         final longPressMostRecentDownstreamWordBoundaryPosition = DocumentPosition(
-          nodeId: _longPressMostRecentBoundaryNodeId!,
+          documentPath: _document.getPathByNodeId(_longPressMostRecentBoundaryNodeId!)!,
           nodePosition: TextNodePosition(offset: _longPressMostRecentDownstreamWordBoundary!),
         );
         final DocumentPosition boundary = longPressMostRecentDownstreamWordBoundaryPosition;

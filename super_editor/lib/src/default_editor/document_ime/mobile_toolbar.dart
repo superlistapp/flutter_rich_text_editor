@@ -478,7 +478,7 @@ class KeyboardEditingToolbarOperations {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: selectedNode.id,
+            documentPath: document.getPathByNodeId(selectedNode.id)!,
             nodePosition: const TextNodePosition(offset: 3),
           ),
         ),

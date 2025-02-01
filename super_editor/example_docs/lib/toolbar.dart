@@ -124,7 +124,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
     // Apply a new block type to an existing paragraph node.
     widget.editor.execute([
       ChangeParagraphBlockTypeRequest(
-        nodeId: widget.composer.selection!.extent.nodeId,
+        nodeId: widget.composer.selection!.extent.documentPath.targetNodeId,
         blockType: _getBlockTypeAttribution(newType),
       ),
     ]);
@@ -257,7 +257,8 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
     final selectionEnd = max(baseOffset, extentOffset);
     final selectionRange = TextRange(start: selectionStart, end: selectionEnd - 1);
 
-    final textNode = widget.document.getNodeById(selection.extent.nodeId) as TextNode;
+    final textNodePath = selection.extent.documentPath;
+    final textNode = widget.document.getNodeById(textNodePath.targetNodeId) as TextNode;
     final text = textNode.text;
 
     final trimmedRange = _trimTextRangeWhitespace(text, selectionRange);
@@ -268,11 +269,11 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       AddTextAttributionsRequest(
         documentRange: DocumentRange(
           start: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: textNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.start),
           ),
           end: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: textNodePath,
             nodePosition: TextNodePosition(offset: trimmedRange.end),
           ),
         ),
@@ -296,7 +297,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
 
     widget.editor.execute([
       ChangeParagraphAlignmentRequest(
-        nodeId: widget.composer.selection!.extent.nodeId,
+        nodeId: widget.composer.selection!.extent.targetNodeId,
         alignment: newAlignment,
       ),
     ]);
@@ -310,14 +311,14 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       return;
     }
 
-    final node = widget.document.getNodeById(selection.extent.nodeId);
+    final node = widget.document.getNodeById(selection.extent.targetNodeId);
     if (node is TaskNode) {
       widget.editor.execute([
         DeleteUpstreamAtBeginningOfNodeRequest(node),
       ]);
     } else {
       widget.editor.execute([
-        ConvertParagraphToTaskRequest(nodeId: selection.extent.nodeId),
+        ConvertParagraphToTaskRequest(nodeId: selection.extent.targetNodeId),
       ]);
     }
   }
@@ -330,7 +331,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       return;
     }
 
-    final node = widget.document.getNodeById(selection.extent.nodeId);
+    final node = widget.document.getNodeById(selection.extent.targetNodeId);
     if (node is ListItemNode) {
       widget.editor.execute([
         ConvertListItemToParagraphRequest(nodeId: node.id, paragraphMetadata: node.metadata),
@@ -338,7 +339,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
     } else {
       widget.editor.execute([
         ConvertParagraphToListItemRequest(
-          nodeId: selection.extent.nodeId,
+          nodeId: selection.extent.targetNodeId,
           type: ListItemType.unordered,
         ),
       ]);
@@ -353,7 +354,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       return;
     }
 
-    final node = widget.document.getNodeById(selection.extent.nodeId);
+    final node = widget.document.getNodeById(selection.extent.targetNodeId);
     if (node is ListItemNode) {
       widget.editor.execute([
         ConvertListItemToParagraphRequest(nodeId: node.id, paragraphMetadata: node.metadata),
@@ -361,7 +362,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
     } else {
       widget.editor.execute([
         ConvertParagraphToListItemRequest(
-          nodeId: selection.extent.nodeId,
+          nodeId: selection.extent.targetNodeId,
           type: ListItemType.ordered,
         ),
       ]);
@@ -472,7 +473,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
     if (widget.composer.selection == null) {
       return TextAlign.left;
     }
-    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(widget.composer.selection!.extent.targetNodeId);
     if (selectedNode is ParagraphNode) {
       final align = selectedNode.getMetadataValue('textAlign');
       switch (align) {
@@ -517,7 +518,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       return false;
     }
 
-    final selectedNode = widget.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(selection.extent.targetNodeId);
     return selectedNode is ParagraphNode;
   }
 
@@ -529,7 +530,7 @@ class _DocsEditorToolbarState extends State<DocsEditorToolbar> {
       return null;
     }
 
-    final selectedNode = widget.document.getNodeById(selection.extent.nodeId);
+    final selectedNode = widget.document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode is ParagraphNode) {
       return (selectedNode.getMetadataValue('blockType') as NamedAttribution).id;
     }

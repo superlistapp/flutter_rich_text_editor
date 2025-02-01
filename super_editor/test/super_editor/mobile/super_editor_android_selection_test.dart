@@ -86,11 +86,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 6),
               ),
             ),
@@ -138,11 +138,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 6),
               ),
             ),
@@ -167,11 +167,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 10),
               ),
             ),
@@ -209,11 +209,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordAdipiscingEnd),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordDolorStart),
               ),
             ),
@@ -230,11 +230,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordAdipiscingEnd),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordIpsumStart),
               ),
             ),
@@ -279,11 +279,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 12),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 21),
               ),
             ),
@@ -330,11 +330,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 12),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 21),
               ),
             ),
@@ -359,11 +359,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 12),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 19),
               ),
             ),
@@ -398,11 +398,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordAdipiscingStart),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordTemporEnd),
               ),
             ),
@@ -419,11 +419,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordAdipiscingStart),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: _wordIncididuntEnd),
               ),
             ),
@@ -465,8 +465,8 @@ void main() {
           expect(
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
-              base: DocumentPosition(nodeId: '1', nodePosition: UpstreamDownstreamNodePosition.upstream()),
-              extent: DocumentPosition(nodeId: '1', nodePosition: UpstreamDownstreamNodePosition.downstream()),
+              base: DocumentPosition(documentPath: '1', nodePosition: UpstreamDownstreamNodePosition.upstream()),
+              extent: DocumentPosition(documentPath: '1', nodePosition: UpstreamDownstreamNodePosition.downstream()),
             ),
           );
 
@@ -483,9 +483,9 @@ void main() {
           expect(
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
-              base: DocumentPosition(nodeId: '1', nodePosition: UpstreamDownstreamNodePosition.upstream()),
+              base: DocumentPosition(documentPath: '1', nodePosition: UpstreamDownstreamNodePosition.upstream()),
               extent: DocumentPosition(
-                nodeId: "2",
+                documentPath: "2",
                 nodePosition: TextNodePosition(offset: 5),
               ),
             ),
@@ -527,8 +527,8 @@ void main() {
           expect(
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
-              base: DocumentPosition(nodeId: '2', nodePosition: UpstreamDownstreamNodePosition.upstream()),
-              extent: DocumentPosition(nodeId: '2', nodePosition: UpstreamDownstreamNodePosition.downstream()),
+              base: DocumentPosition(documentPath: '2', nodePosition: UpstreamDownstreamNodePosition.upstream()),
+              extent: DocumentPosition(documentPath: '2', nodePosition: UpstreamDownstreamNodePosition.downstream()),
             ),
           );
 
@@ -545,9 +545,9 @@ void main() {
           expect(
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
-              base: DocumentPosition(nodeId: '2', nodePosition: UpstreamDownstreamNodePosition.downstream()),
+              base: DocumentPosition(documentPath: '2', nodePosition: UpstreamDownstreamNodePosition.downstream()),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 0),
               ),
             ),
@@ -593,11 +593,11 @@ void main() {
             selectionEquivalentTo(
               const DocumentSelection(
                 base: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 12),
                 ),
                 extent: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 21),
                 ),
               ),
@@ -639,11 +639,11 @@ void main() {
             selectionEquivalentTo(
               const DocumentSelection(
                 base: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 12),
                 ),
                 extent: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 21),
                 ),
               ),
@@ -670,11 +670,11 @@ void main() {
             selectionEquivalentTo(
               const DocumentSelection(
                 base: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 12),
                 ),
                 extent: DocumentPosition(
-                  nodeId: "1",
+                  documentPath: "1",
                   nodePosition: TextNodePosition(offset: 19),
                 ),
               ),
@@ -715,11 +715,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 6),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
             ),
@@ -759,11 +759,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 6),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
             ),
@@ -785,11 +785,11 @@ void main() {
             SuperEditorInspector.findDocumentSelection(),
             const DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 10),
               ),
               extent: DocumentPosition(
-                nodeId: "1",
+                documentPath: "1",
                 nodePosition: TextNodePosition(offset: 17),
               ),
             ),
@@ -837,16 +837,7 @@ Future<void> _pumpAppWithLongText(WidgetTester tester) async {
       .pump();
 }
 
-const _wordConsecteturSelection = DocumentSelection(
-  base: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: 28),
-  ),
-  extent: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: 39),
-  ),
-);
+final _wordConsecteturSelection = TextNode.selectionWithin(["1"], 28, 39);
 
 const _wordIpsumStart = 6;
 // ignore: unused_element
@@ -854,28 +845,18 @@ const _wordIpsumEnd = 11;
 
 const _wordDolorStart = 12;
 const _wordDolorEnd = 17;
-const _wordDolorSelection = DocumentSelection(
-  base: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: _wordDolorStart),
-  ),
-  extent: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: _wordDolorEnd),
-  ),
+final _wordDolorSelection = TextNode.selectionWithin(
+  ["1"],
+  _wordDolorStart,
+  _wordDolorEnd,
 );
 
 const _wordAdipiscingStart = 40;
 const _wordAdipiscingEnd = 50;
-const _wordAdipiscingSelection = DocumentSelection(
-  base: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: _wordAdipiscingStart),
-  ),
-  extent: DocumentPosition(
-    nodeId: "1",
-    nodePosition: TextNodePosition(offset: _wordAdipiscingEnd),
-  ),
+final _wordAdipiscingSelection = TextNode.selectionWithin(
+  ["1"],
+  _wordAdipiscingStart,
+  _wordAdipiscingEnd,
 );
 
 // ignore: unused_element

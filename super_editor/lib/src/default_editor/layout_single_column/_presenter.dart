@@ -13,6 +13,7 @@ class SingleColumnDocumentComponentContext {
   const SingleColumnDocumentComponentContext({
     required this.context,
     required this.componentKey,
+    required this.componentBuilders,
   });
 
   /// The [BuildContext] for the parent of the [DocumentComponent]
@@ -25,6 +26,10 @@ class SingleColumnDocumentComponentContext {
   /// The [componentKey] is used by the [DocumentLayout] to query for
   /// node-specific information, like node positions and selections.
   final GlobalKey componentKey;
+
+  /// All registered [ComponentBuilder]s for the document layout, which can
+  /// be used to create components within components.
+  final List<ComponentBuilder> componentBuilders;
 }
 
 /// Produces [SingleColumnLayoutViewModel]s to be displayed by a
@@ -99,6 +104,11 @@ class SingleColumnLayoutPresenter {
     }
   }
 
+  // TODO: check if this is the appropriate place for this method. I added this
+  //       so that the document layout widget could report document positions for
+  //       document components.
+  NodePath? getPathToNode(String nodeId) => _document.getPathByNodeId(nodeId);
+
   void _assemblePipeline() {
     // Add all the phases that were provided by the client.
     for (int i = 0; i < _pipeline.length; i += 1) {
@@ -167,7 +177,7 @@ class SingleColumnLayoutPresenter {
       for (final node in _document) {
         SingleColumnLayoutComponentViewModel? viewModel;
         for (final builder in _componentBuilders) {
-          viewModel = builder.createViewModel(_document, node);
+          viewModel = builder.createViewModel(_document, node, _componentBuilders);
           if (viewModel != null) {
             break;
           }
@@ -365,7 +375,11 @@ typedef ViewModelChangeCallback = void Function({
 abstract class ComponentBuilder {
   /// Produces a [SingleColumnLayoutComponentViewModel] with default styles for the given
   /// [node], or returns `null` if this builder doesn't apply to the given node.
-  SingleColumnLayoutComponentViewModel? createViewModel(Document document, DocumentNode node);
+  SingleColumnLayoutComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  );
 
   /// Creates a visual component that renders the given [viewModel],
   /// or returns `null` if this builder doesn't apply to the given [viewModel].

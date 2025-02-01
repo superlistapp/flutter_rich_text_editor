@@ -316,8 +316,9 @@ class TextDeltasDocumentEditor {
 
       // After inserting a block level new line, the selection changes to another node.
       // Therefore, we need to update the insertion position.
-      insertionNode = document.getNodeById(selection.value!.extent.nodeId)!;
-      insertionPosition = DocumentPosition(nodeId: insertionNode.id, nodePosition: insertionNode.endPosition);
+      final insertionPath = selection.value!.extent.documentPath;
+      insertionNode = document.getNodeAtPath(insertionPath)!;
+      insertionPosition = DocumentPosition(documentPath: insertionPath, nodePosition: insertionNode.endPosition);
     }
 
     if (insertionNode is! TextNode || insertionPosition.nodePosition is! TextNodePosition) {
@@ -464,13 +465,15 @@ class TextDeltasDocumentEditor {
     final bottomImeToDocTextRange = TextRange(start: imeNewlineIndex + 1, end: newImeValue.text.length);
 
     // Update mapping from Document nodes to IME ranges.
-    _serializedDoc.docTextNodesToImeRanges[originNode.id] = topImeToDocTextRange;
-    _serializedDoc.docTextNodesToImeRanges[newNode.id] = bottomImeToDocTextRange;
+    // FIXME: Don't assume that every node is a top-level node
+    _serializedDoc.docTextNodesToImeRanges[NodePath.forNode(originNode.id)] = topImeToDocTextRange;
+    _serializedDoc.docTextNodesToImeRanges[NodePath.forNode(newNode.id)] = bottomImeToDocTextRange;
 
     // Remove old mapping from IME TextRange to Document node.
-    late final MapEntry<TextRange, String> oldImeToDoc;
+    late final MapEntry<TextRange, NodePath> oldImeToDoc;
     for (final entry in _serializedDoc.imeRangesToDocTextNodes.entries) {
-      if (entry.value != originNode.id) {
+      // FIXME: Don't assume that every node is a top-level node
+      if (entry.value != NodePath.forNode(originNode.id)) {
         continue;
       }
 
@@ -480,8 +483,9 @@ class TextDeltasDocumentEditor {
     _serializedDoc.imeRangesToDocTextNodes.remove(oldImeToDoc.key);
 
     // Update and add mapping from IME TextRanges to Document nodes.
-    _serializedDoc.imeRangesToDocTextNodes[topImeToDocTextRange] = originNode.id;
-    _serializedDoc.imeRangesToDocTextNodes[bottomImeToDocTextRange] = newNode.id;
+    // FIXME: Don't assume that every node is a top-level node
+    _serializedDoc.imeRangesToDocTextNodes[topImeToDocTextRange] = NodePath.forNode(originNode.id);
+    _serializedDoc.imeRangesToDocTextNodes[bottomImeToDocTextRange] = NodePath.forNode(newNode.id);
   }
 
   DocumentSelection? _calculateNewDocumentSelection(TextEditingDelta delta) {

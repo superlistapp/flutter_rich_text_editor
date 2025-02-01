@@ -117,7 +117,7 @@ class ClearSelectedStylesCommand extends EditCommand {
     final document = context.find<MutableDocument>(Editor.documentKey);
     if (selection.isCollapsed) {
       // Remove block style.
-      final selectedNode = document.getNodeById(selection.extent.nodeId);
+      final selectedNode = document.getNodeById(selection.extent.targetNodeId);
       if (selectedNode is! TextNode) {
         // Can't remove text block styles from a non-text node.
         return;
@@ -331,7 +331,7 @@ class ToggleTextBlockFormatCommand extends EditCommand {
     }
 
     final document = context.find<MutableDocument>(Editor.documentKey);
-    final selectedNode = document.getNodeById(selection.extent.nodeId);
+    final selectedNode = document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode is! TextNode) {
       // Can't apply a block level text format to a non-text node.
       return;
@@ -492,7 +492,7 @@ class ConvertTextBlockToFormatCommand extends EditCommand {
     }
 
     final document = context.find<MutableDocument>(Editor.documentKey);
-    final selectedNode = document.getNodeById(selection.extent.nodeId);
+    final selectedNode = document.getNodeById(selection.extent.targetNodeId);
     if (selectedNode is! TextNode) {
       // Can't apply a block level text format to a non-text node.
       return;
@@ -609,7 +609,7 @@ ExecutionInstruction enterToInsertNewlineInCodeBlock({
   if (selection == null || (selection.base.nodeId != selection.extent.nodeId)) {
     return ExecutionInstruction.continueExecution;
   }
-  final selectedNode = editContext.document.getNodeById(selection.extent.nodeId)!;
+  final selectedNode = editContext.document.getNodeById(selection.extent.targetNodeId)!;
   if (selectedNode is! ParagraphNode || selectedNode.metadata["blockType"] != codeAttribution) {
     return ExecutionInstruction.continueExecution;
   }

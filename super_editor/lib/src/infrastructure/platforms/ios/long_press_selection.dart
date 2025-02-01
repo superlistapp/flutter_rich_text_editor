@@ -49,11 +49,11 @@ class IosLongPressSelectionStrategy {
       // Select the whole node.
       _longPressInitialSelection = DocumentSelection(
         base: DocumentPosition(
-          nodeId: docPosition.nodeId,
+          documentPath: docPosition.documentPath,
           nodePosition: const UpstreamDownstreamNodePosition.upstream(),
         ),
         extent: DocumentPosition(
-          nodeId: docPosition.nodeId,
+          documentPath: docPosition.documentPath,
           nodePosition: const UpstreamDownstreamNodePosition.downstream(),
         ),
       );

@@ -128,7 +128,7 @@ class UpdateComposerTextStylesReaction extends EditReaction {
       return;
     }
 
-    final node = document.getNodeById(composer.selection!.extent.nodeId);
+    final node = document.getNodeAtPath(composer.selection!.extent.documentPath);
     if (node is! TextNode) {
       return;
     }

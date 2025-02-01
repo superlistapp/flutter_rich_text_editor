@@ -31,6 +31,7 @@ bool moveSelectionToNearestSelectableNode({
   required DocumentNode startingNode,
   bool expand = false,
 }) {
+  NodePath? newNodePath;
   String? newNodeId;
   NodePosition? newPosition;
 
@@ -38,6 +39,7 @@ bool moveSelectionToNearestSelectableNode({
   final downstreamNode = _getDownstreamSelectableNodeAfter(document, documentLayoutResolver, startingNode);
   if (downstreamNode != null) {
     newNodeId = downstreamNode.id;
+    newNodePath = document.getPathByNodeId(newNodeId)!;
     final nextComponent = documentLayoutResolver().getComponentByNodeId(newNodeId);
     newPosition = nextComponent?.getBeginningPosition();
   }
@@ -47,6 +49,7 @@ bool moveSelectionToNearestSelectableNode({
     final upstreamNode = _getUpstreamSelectableNodeBefore(document, documentLayoutResolver, startingNode);
     if (upstreamNode != null) {
       newNodeId = upstreamNode.id;
+      newNodePath = document.getPathByNodeId(newNodeId)!;
       final previousComponent = documentLayoutResolver().getComponentByNodeId(newNodeId);
       newPosition = previousComponent?.getBeginningPosition();
     }
@@ -57,7 +60,7 @@ bool moveSelectionToNearestSelectableNode({
   }
 
   final newExtent = DocumentPosition(
-    nodeId: newNodeId,
+    documentPath: newNodePath!,
     nodePosition: newPosition,
   );
 
@@ -242,11 +245,11 @@ bool selectBlockAt(DocumentPosition position, ValueNotifier<DocumentSelection?> 
 
   selection.value = DocumentSelection(
     base: DocumentPosition(
-      nodeId: position.nodeId,
+      documentPath: position.documentPath,
       nodePosition: const UpstreamDownstreamNodePosition.upstream(),
     ),
     extent: DocumentPosition(
-      nodeId: position.nodeId,
+      documentPath: position.documentPath,
       nodePosition: const UpstreamDownstreamNodePosition.downstream(),
     ),
   );
@@ -279,6 +282,7 @@ void moveToNearestSelectableComponent(
   // interactor, because it's for read-only documents. Selection operations
   // should probably be moved to something outside of CommonOps
   DocumentNode startingNode = document.getNodeById(nodeId)!;
+  NodePath? newNodePath;
   String? newNodeId;
   NodePosition? newPosition;
 
@@ -286,6 +290,7 @@ void moveToNearestSelectableComponent(
   final downstreamNode = _getDownstreamSelectableNodeAfter(document, () => documentLayout, startingNode);
   if (downstreamNode != null) {
     newNodeId = downstreamNode.id;
+    newNodePath = document.getPathByNodeId(newNodeId);
     final nextComponent = documentLayout.getComponentByNodeId(newNodeId);
     newPosition = nextComponent?.getBeginningPosition();
   }
@@ -295,6 +300,7 @@ void moveToNearestSelectableComponent(
     final upstreamNode = _getUpstreamSelectableNodeBefore(document, () => documentLayout, startingNode);
     if (upstreamNode != null) {
       newNodeId = upstreamNode.id;
+      newNodePath = document.getPathByNodeId(newNodeId);
       final previousComponent = documentLayout.getComponentByNodeId(newNodeId);
       newPosition = previousComponent?.getBeginningPosition();
     }
@@ -306,7 +312,7 @@ void moveToNearestSelectableComponent(
 
   selection.value = selection.value!.expandTo(
     DocumentPosition(
-      nodeId: newNodeId,
+      documentPath: newNodePath!,
       nodePosition: newPosition,
     ),
   );
@@ -325,6 +331,7 @@ bool moveCaretUpstream({
   }
 
   final currentExtent = selection.extent;
+  final newNodePath = currentExtent.documentPath;
   final nodeId = currentExtent.nodeId;
   final node = document.getNodeById(nodeId);
   if (node == null) {
@@ -356,7 +363,7 @@ bool moveCaretUpstream({
   }
 
   final newExtent = DocumentPosition(
-    nodeId: newExtentNodeId,
+    documentPath: newNodePath,
     nodePosition: newExtentNodePosition,
   );
 
@@ -408,7 +415,7 @@ bool moveCaretDownstream({
     return false;
   }
 
-  String newExtentNodeId = nodeId;
+  NodePath newExtentNodePath = currentExtent.documentPath;
   NodePosition? newExtentNodePosition = extentComponent.movePositionRight(currentExtent.nodePosition, movementModifier);
 
   if (newExtentNodePosition == null) {
@@ -421,7 +428,7 @@ bool moveCaretDownstream({
       return false;
     }
 
-    newExtentNodeId = nextNode.id;
+    newExtentNodePath = document.getPathByNodeId(nextNode.id)!;
     final nextComponent = documentLayout.getComponentByNodeId(nextNode.id);
     if (nextComponent == null) {
       throw Exception('Could not find component in document layout for the downstream node with ID: ${nextNode.id}');
@@ -430,7 +437,7 @@ bool moveCaretDownstream({
   }
 
   final newExtent = DocumentPosition(
-    nodeId: newExtentNodeId,
+    documentPath: newExtentNodePath,
     nodePosition: newExtentNodePosition,
   );
 
@@ -484,17 +491,17 @@ bool moveCaretUp({
     return false;
   }
 
-  String newExtentNodeId = nodeId;
+  NodePath newExtentNodePath = currentExtent.documentPath;
   NodePosition? newExtentNodePosition = extentComponent.movePositionUp(currentExtent.nodePosition);
 
   if (newExtentNodePosition == null) {
     // Move to next node
     final nextNode = _getUpstreamSelectableNodeBefore(document, () => documentLayout, node);
     if (nextNode != null) {
-      newExtentNodeId = nextNode.id;
+      newExtentNodePath = document.getPathByNodeId(nextNode.id)!;
       final nextComponent = documentLayout.getComponentByNodeId(nextNode.id);
       if (nextComponent == null) {
-        editorOpsLog.shout("Tried to obtain non-existent component by node id: $newExtentNodeId");
+        editorOpsLog.shout("Tried to obtain non-existent component by node id: $newExtentNodePath");
         return false;
       }
       final offsetToMatch = extentComponent.getOffsetForPosition(currentExtent.nodePosition);
@@ -507,7 +514,7 @@ bool moveCaretUp({
   }
 
   final newExtent = DocumentPosition(
-    nodeId: newExtentNodeId,
+    documentPath: newExtentNodePath,
     nodePosition: newExtentNodePosition,
   );
 
@@ -561,17 +568,17 @@ bool moveCaretDown({
     return false;
   }
 
-  String newExtentNodeId = nodeId;
+  NodePath newExtentNodePath = currentExtent.documentPath;
   NodePosition? newExtentNodePosition = extentComponent.movePositionDown(currentExtent.nodePosition);
 
   if (newExtentNodePosition == null) {
     // Move to next node
     final nextNode = _getDownstreamSelectableNodeAfter(document, () => documentLayout, node);
     if (nextNode != null) {
-      newExtentNodeId = nextNode.id;
+      newExtentNodePath = document.getPathByNodeId(nextNode.id)!;
       final nextComponent = documentLayout.getComponentByNodeId(nextNode.id);
       if (nextComponent == null) {
-        editorOpsLog.shout("Tried to obtain non-existent component by node id: $newExtentNodeId");
+        editorOpsLog.shout("Tried to obtain non-existent component by node id: $newExtentNodePath");
         return false;
       }
       final offsetToMatch = extentComponent.getOffsetForPosition(currentExtent.nodePosition);
@@ -584,7 +591,7 @@ bool moveCaretDown({
   }
 
   final newExtent = DocumentPosition(
-    nodeId: newExtentNodeId,
+    documentPath: newExtentNodePath,
     nodePosition: newExtentNodePosition,
   );
 
@@ -606,17 +613,7 @@ bool selectAll(Document document, ValueNotifier<DocumentSelection?> selection) {
     return false;
   }
 
-  selection.value = DocumentSelection(
-    base: DocumentPosition(
-      nodeId: document.first.id,
-      nodePosition: document.first.beginningPosition,
-    ),
-    extent: DocumentPosition(
-      nodeId: document.last.id,
-      nodePosition: document.last.endPosition,
-    ),
-  );
-
+  selection.value = document.selectAll();
   return true;
 }
 

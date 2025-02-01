@@ -24,14 +24,14 @@ void main() {
           ),
         ]);
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
+          initialSelection: DocumentSelection(
             base: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 0),
             ),
             extent: DocumentPosition(
-              nodeId: "2",
-              nodePosition: TextNodePosition(offset: 50),
+              documentPath: NodePath.forNode("2"),
+              nodePosition: const TextNodePosition(offset: 50),
             ),
           ),
         );
@@ -62,14 +62,14 @@ void main() {
           ),
         ]);
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
+          initialSelection: DocumentSelection(
             base: DocumentPosition(
-              nodeId: "1",
-              nodePosition: UpstreamDownstreamNodePosition.upstream(),
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const UpstreamDownstreamNodePosition.upstream(),
             ),
             extent: DocumentPosition(
-              nodeId: "2",
-              nodePosition: TextNodePosition(offset: 50),
+              documentPath: NodePath.forNode("2"),
+              nodePosition: const TextNodePosition(offset: 50),
             ),
           ),
         );
@@ -100,14 +100,14 @@ void main() {
           HorizontalRuleNode(id: "2"),
         ]);
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
+          initialSelection: DocumentSelection(
             base: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 50),
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 50),
             ),
             extent: DocumentPosition(
-              nodeId: "2",
-              nodePosition: UpstreamDownstreamNodePosition.downstream(),
+              documentPath: NodePath.forNode("2"),
+              nodePosition: const UpstreamDownstreamNodePosition.downstream(),
             ),
           ),
         );
@@ -133,14 +133,14 @@ void main() {
           HorizontalRuleNode(id: "2"),
         ]);
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection(
+          initialSelection: DocumentSelection(
             base: DocumentPosition(
-              nodeId: "1",
-              nodePosition: UpstreamDownstreamNodePosition.upstream(),
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const UpstreamDownstreamNodePosition.upstream(),
             ),
             extent: DocumentPosition(
-              nodeId: "2",
-              nodePosition: UpstreamDownstreamNodePosition.downstream(),
+              documentPath: NodePath.forNode("2"),
+              nodePosition: const UpstreamDownstreamNodePosition.downstream(),
             ),
           ),
         );
@@ -198,12 +198,7 @@ void main() {
             document: MutableDocument(nodes: [
               node,
             ]),
-            selection: DocumentSelection.collapsed(
-              position: DocumentPosition(
-                nodeId: node.id,
-                nodePosition: node.endPosition,
-              ),
-            ),
+            selection: BlockNode.caretAtEdge([node.id], node.endPosition.affinity),
           ),
           isNull,
         );

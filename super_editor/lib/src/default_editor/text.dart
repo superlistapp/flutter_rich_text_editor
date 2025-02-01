@@ -33,6 +33,32 @@ import 'text_tools.dart';
 
 @immutable
 class TextNode extends DocumentNode {
+  static DocumentSelection selectionWithin(List<String> nodePath, int base, int extent) {
+    return DocumentSelection(
+      base: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: TextNodePosition(offset: base),
+      ),
+      extent: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: TextNodePosition(offset: extent),
+      ),
+    );
+  }
+
+  /// A factory method for a collapsed [DocumentSelection] within a [TextNode]
+  /// at the given [nodePath], and the given [textOffset] within that node.
+  ///
+  /// This factory is provided as a convenience for less verbose code.
+  static DocumentSelection caretAt(List<String> nodePath, int textOffset) {
+    return DocumentSelection.collapsed(
+      position: DocumentPosition(
+        documentPath: NodePath(nodePath),
+        nodePosition: TextNodePosition(offset: textOffset),
+      ),
+    );
+  }
+
   TextNode({
     required this.id,
     required this.text,
@@ -89,14 +115,14 @@ class TextNode extends DocumentNode {
   }
 
   /// Returns a [DocumentSelection] within this [TextNode] from [startIndex] to [endIndex].
-  DocumentSelection selectionBetween(int startIndex, int endIndex) {
+  DocumentSelection selectionBetween(NodePath nodePath, int startIndex, int endIndex) {
     return DocumentSelection(
       base: DocumentPosition(
-        nodeId: id,
+        documentPath: nodePath,
         nodePosition: TextNodePosition(offset: startIndex),
       ),
       extent: DocumentPosition(
-        nodeId: id,
+        documentPath: nodePath,
         nodePosition: TextNodePosition(offset: endIndex),
       ),
     );
@@ -104,29 +130,29 @@ class TextNode extends DocumentNode {
 
   /// Returns a collapsed [DocumentSelection], positioned within this [TextNode] at the
   /// given [collapsedIndex].
-  DocumentSelection selectionAt(int collapsedIndex) {
+  DocumentSelection selectionAt(NodePath nodePath, int collapsedIndex) {
     return DocumentSelection.collapsed(
-      position: positionAt(collapsedIndex),
+      position: positionAt(nodePath, collapsedIndex),
     );
   }
 
   /// Returns a [DocumentPosition] within this [TextNode] at the given text [index].
-  DocumentPosition positionAt(int index) {
+  DocumentPosition positionAt(NodePath nodePath, int index) {
     return DocumentPosition(
-      nodeId: id,
+      documentPath: nodePath,
       nodePosition: TextNodePosition(offset: index),
     );
   }
 
   /// Returns a [DocumentRange] within this [TextNode] between [startIndex] and [endIndex].
-  DocumentRange rangeBetween(int startIndex, int endIndex) {
+  DocumentRange rangeBetween(NodePath nodePath, int startIndex, int endIndex) {
     return DocumentRange(
       start: DocumentPosition(
-        nodeId: id,
+        documentPath: nodePath,
         nodePosition: TextNodePosition(offset: startIndex),
       ),
       end: DocumentPosition(
-        nodeId: id,
+        documentPath: nodePath,
         nodePosition: TextNodePosition(offset: endIndex),
       ),
     );
@@ -2029,7 +2055,7 @@ class InsertTextCommand extends EditCommand {
       ChangeSelectionCommand(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: textNode.id,
+            documentPath: document.getPathByNodeId(textNode.id)!,
             nodePosition: TextNodePosition(
               offset: textOffset + textToInsert.length,
               affinity: textPosition.affinity,
@@ -2170,6 +2196,7 @@ class InsertNewlineInCodeBlockAtCaretCommand extends BaseInsertNewlineAtCaretCom
     // When inserting a newline after another newline, the existing
     // newline should be removed from the code block, and a new paragraph
     // should be inserted below the code block.
+    final document = context.document;
     if (caretNodePosition.offset == node.text.length && node.text.last == "\n") {
       // The caret is at the end of a code block, following another newline.
       // Remove the existing newline.
@@ -2199,7 +2226,7 @@ class InsertNewlineInCodeBlockAtCaretCommand extends BaseInsertNewlineAtCaretCom
           ChangeSelectionCommand(
             DocumentSelection.collapsed(
               position: DocumentPosition(
-                nodeId: newNodeId,
+                documentPath: document.getPathByNodeId(newNodeId)!,
                 nodePosition: const TextNodePosition(offset: 0),
               ),
             ),
@@ -2212,7 +2239,7 @@ class InsertNewlineInCodeBlockAtCaretCommand extends BaseInsertNewlineAtCaretCom
       executor.executeCommand(
         InsertTextCommand(
           documentPosition: DocumentPosition(
-            nodeId: node.id,
+            documentPath: document.getPathByNodeId(node.id)!,
             nodePosition: node.endPosition,
           ),
           textToInsert: "\n",
@@ -2294,7 +2321,7 @@ class DefaultInsertNewlineAtCaretCommand extends BaseInsertNewlineAtCaretCommand
           ChangeSelectionCommand(
             DocumentSelection.collapsed(
               position: DocumentPosition(
-                nodeId: newNodeId,
+                documentPath: context.document.getPathByNodeId(newNodeId)!,
                 nodePosition: const TextNodePosition(offset: 0),
               ),
             ),
@@ -2318,7 +2345,7 @@ class DefaultInsertNewlineAtCaretCommand extends BaseInsertNewlineAtCaretCommand
           ChangeSelectionCommand(
             DocumentSelection.collapsed(
               position: DocumentPosition(
-                nodeId: newNodeId,
+                documentPath: context.document.getPathByNodeId(newNodeId)!,
                 nodePosition: const TextNodePosition(offset: 0),
               ),
             ),
@@ -2355,7 +2382,7 @@ class DefaultInsertNewlineAtCaretCommand extends BaseInsertNewlineAtCaretCommand
         ChangeSelectionCommand(
           DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: newNodeId,
+              documentPath: context.document.getPathByNodeId(newNodeId)!,
               nodePosition: const TextNodePosition(offset: 0),
             ),
           ),
@@ -2844,21 +2871,21 @@ DocumentPosition _getDocumentPositionAfterExpandedDeletion({
       // node will be retained and converted into a paragraph, if it's not
       // already a paragraph.
       newSelectionPosition = DocumentPosition(
-        nodeId: baseNode.id,
+        documentPath: document.getPathByNodeId(baseNode.id)!,
         nodePosition: const TextNodePosition(offset: 0),
       );
     } else if (topNodePosition == topNode.beginningPosition) {
       // The top node will be deleted, but only part of the bottom node
       // will be deleted.
       newSelectionPosition = DocumentPosition(
-        nodeId: bottomNode.id,
+        documentPath: document.getPathByNodeId(bottomNode.id)!,
         nodePosition: bottomNode.beginningPosition,
       );
     } else if (bottomNodePosition == bottomNode.endPosition) {
       // The bottom node will be deleted, but only part of the top node
       // will be deleted.
       newSelectionPosition = DocumentPosition(
-        nodeId: topNode.id,
+        documentPath: document.getPathByNodeId(topNode.id)!,
         nodePosition: topNodePosition,
       );
     } else {
@@ -2879,7 +2906,7 @@ DocumentPosition _getDocumentPositionAfterExpandedDeletion({
     if (basePosition.nodePosition is UpstreamDownstreamNodePosition) {
       // Assume that the node was replace with an empty paragraph.
       newSelectionPosition = DocumentPosition(
-        nodeId: baseNode.id,
+        documentPath: document.getPathByNodeId(baseNode.id)!,
         nodePosition: const TextNodePosition(offset: 0),
       );
     } else if (basePosition.nodePosition is TextNodePosition) {
@@ -2887,7 +2914,7 @@ DocumentPosition _getDocumentPositionAfterExpandedDeletion({
       final extentOffset = (extentPosition.nodePosition as TextNodePosition).offset;
 
       newSelectionPosition = DocumentPosition(
-        nodeId: baseNode.id,
+        documentPath: document.getPathByNodeId(baseNode.id)!,
         nodePosition: TextNodePosition(offset: min(baseOffset, extentOffset)),
       );
     } else {

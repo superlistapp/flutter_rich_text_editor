@@ -159,7 +159,11 @@ class TaskComponentBuilder implements ComponentBuilder {
   final Editor _editor;
 
   @override
-  TaskComponentViewModel? createViewModel(Document document, DocumentNode node) {
+  TaskComponentViewModel? createViewModel(
+    Document document,
+    DocumentNode node,
+    List<ComponentBuilder> componentBuilders,
+  ) {
     if (node is! TaskNode) {
       return null;
     }
@@ -686,7 +690,7 @@ class InsertNewlineInTaskAtCaretCommand extends BaseInsertNewlineAtCaretCommand 
         ChangeSelectionCommand(
           DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: newNodeId,
+              documentPath: context.document.getPathByNodeId(newNodeId)!,
               nodePosition: const TextNodePosition(offset: 0),
             ),
           ),
@@ -923,7 +927,7 @@ class SplitExistingTaskCommand extends EditCommand {
     final oldComposingRegion = composer.composingRegion.value;
     final newSelection = DocumentSelection.collapsed(
       position: DocumentPosition(
-        nodeId: newTaskNode.id,
+        documentPath: document.getPathByNodeId(newTaskNode.id)!,
         nodePosition: const TextNodePosition(offset: 0),
       ),
     );

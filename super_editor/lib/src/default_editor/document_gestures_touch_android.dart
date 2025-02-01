@@ -887,11 +887,11 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
       ChangeSelectionRequest(
         DocumentSelection(
           base: DocumentPosition(
-            nodeId: position.nodeId,
+            documentPath: position.documentPath,
             nodePosition: const UpstreamDownstreamNodePosition.upstream(),
           ),
           extent: DocumentPosition(
-            nodeId: position.nodeId,
+            documentPath: position.documentPath,
             nodePosition: const UpstreamDownstreamNodePosition.downstream(),
           ),
         ),

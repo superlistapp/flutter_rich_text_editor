@@ -15,23 +15,14 @@ void main() {
         );
 
         // Create a selection for the whole text.
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 0),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 25),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 0, 25);
 
         expect(document.getAllAttributions(selection), isEmpty);
       });
 
       test('returns attributions that span throughout the entirety of the text', () {
         // Create a paragraph with the following attributions:
-        // - bold: applied throught the entire paragraph.
+        // - bold: applied throughout the entire paragraph.
         // - underline: applied to the word "with",
         // - italics: applied to the "th".
         final document = MutableDocument(
@@ -56,16 +47,7 @@ void main() {
         );
 
         // Create a selection for the word "with".
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 5),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 9),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 5, 9);
 
         expect(document.getAllAttributions(selection), {boldAttribution, underlineAttribution});
       });
@@ -83,16 +65,7 @@ void main() {
         );
 
         // Create a selection for the whole text.
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 0),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 25),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 0, 25);
 
         expect(document.getAttributionsByType<FontSizeAttribution>(selection), isEmpty);
       });
@@ -117,16 +90,7 @@ void main() {
         );
 
         // Create a selection for the word "with";
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 5),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 9),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 5, 9);
 
         expect(document.getAttributionsByType<FontSizeAttribution>(selection), isEmpty);
       });
@@ -151,16 +115,7 @@ void main() {
         );
 
         // Create a selection for the word "with";
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 5),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 9),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 5, 9);
 
         expect(document.getAttributionsByType<FontSizeAttribution>(selection), isEmpty);
       });
@@ -185,16 +140,7 @@ void main() {
         );
 
         // Create a selection for the word "with";
-        const selection = DocumentSelection(
-          base: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 5),
-          ),
-          extent: DocumentPosition(
-            nodeId: '1',
-            nodePosition: TextNodePosition(offset: 9),
-          ),
-        );
+        final selection = TextNode.selectionWithin(["1"], 5, 9);
 
         expect(document.getAttributionsByType<FontSizeAttribution>(selection), {const FontSizeAttribution(14)});
       });

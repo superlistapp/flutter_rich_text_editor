@@ -26,6 +26,19 @@ abstract class Document implements Iterable<DocumentNode> {
   @override
   bool get isEmpty;
 
+  // FIXME: Started defining these, but not sure if there's an unambiguous definition or not.
+  // /// Returns the first [DocumentPosition] within the document.
+  // ///
+  // /// This is the position for which attempting to move backward in content
+  // /// order would fail to move the caret.
+  // DocumentPosition get beginning;
+  //
+  // /// Returns the last [DocumentPosition] within the document.
+  // ///
+  // /// This is the position for which attempting to move forward in content
+  // /// order would fail to move the caret.
+  // DocumentPosition get end;
+
   /// Returns the first [DocumentNode] in this [Document], or `null` if this
   /// [Document] is empty.
   DocumentNode? get firstOrNull;
@@ -37,6 +50,19 @@ abstract class Document implements Iterable<DocumentNode> {
   /// Returns the [DocumentNode] with the given [nodeId], or [null]
   /// if no such node exists.
   DocumentNode? getNodeById(String nodeId);
+
+  /// Returns the [DocumentNode] at the given [path] within this [Document],
+  /// or `null` if no such node exists.
+  DocumentNode? getNodeAtPath(NodePath path);
+
+  /// Returns the [NodePath] for the node with the given [nodeId].
+  NodePath? getPathByNodeId(String nodeId);
+
+  /// Returns the index of the given node, within the node's parent.
+  ///
+  /// Every parent node has a list of children. That list of children imposes
+  /// an order.
+  int getNodeIndexInParent(String nodeId);
 
   /// Returns the [DocumentNode] at the given [index], or [null]
   /// if no such node exists.
@@ -271,14 +297,24 @@ class DocumentPosition {
   /// );
   /// ```
   const DocumentPosition({
-    required this.nodeId,
+    required this.documentPath,
     required this.nodePosition,
   });
 
-  /// ID of a [DocumentNode] within a [Document].
-  final String nodeId;
+  /// The node path within the `Document` where this position sits.
+  ///
+  /// Nominally, this path simply refers to the ID of a node in the
+  /// `Document`. However, some nodes contain other nodes, in which
+  /// case this path includes each node along the way.
+  final NodePath documentPath;
 
-  /// Node-specific representation of a position.
+  @Deprecated("Use targetNodeId instead")
+  String get nodeId => targetNodeId;
+
+  /// Returns the ID of the node that this path points to.
+  String get targetNodeId => documentPath.targetNodeId;
+
+  /// The position within the node at the end of the [nodePath].
   ///
   /// For example: a paragraph node might use a [TextNodePosition].
   final NodePosition nodePosition;
@@ -286,9 +322,9 @@ class DocumentPosition {
   /// Whether this position within the document is equivalent to the given
   /// [other] [DocumentPosition].
   ///
-  /// Equivalency is determined by the [NodePosition]. For example, given two
-  /// [TextNodePosition]s, if both of them point to the same character, but one
-  /// has an upstream affinity and the other a downstream affinity, the two
+  /// The difference between equality and equivalency is determined by the [NodePosition].
+  /// For example, given two [TextNodePosition]s, if both of them point to the same character,
+  /// but one has an upstream affinity and the other a downstream affinity, the two
   /// [TextNodePosition]s are considered "non-equal", but they're considered
   /// "equivalent" because both [TextNodePosition]s point to the same location
   /// within the document.
@@ -306,18 +342,18 @@ class DocumentPosition {
   /// Creates a new [DocumentPosition] based on the current position, with the
   /// provided parameters overridden.
   DocumentPosition copyWith({
-    String? nodeId,
+    NodePath? documentPath,
     NodePosition? nodePosition,
   }) {
     return DocumentPosition(
-      nodeId: nodeId ?? this.nodeId,
+      documentPath: documentPath ?? this.documentPath,
       nodePosition: nodePosition ?? this.nodePosition,
     );
   }
 
   @override
   String toString() {
-    return '[DocumentPosition] - node: "$nodeId", position: ($nodePosition)';
+    return '[DocumentPosition] - path: "$nodeId", position: ($nodePosition)';
   }
 }
 
@@ -479,6 +515,341 @@ extension InspectNodeAffinity on DocumentNode {
   }) {
     return base == selectUpstreamPosition(base, extent) ? TextAffinity.downstream : TextAffinity.upstream;
   }
+}
+
+/// The path to a [DocumentNode] within a [Document].
+///
+/// In the average case, the [NodePath] is effectively the same as a node's
+/// ID. However, some nodes are [CompositeDocumentNode]s, which have a hierarchy.
+/// For a composite node, the node path includes every node ID in the composite
+/// hierarchy.
+class NodePath {
+  factory NodePath.forNode(String nodeId) {
+    return NodePath([nodeId]);
+  }
+
+  const NodePath(this.nodeIds);
+
+  /// All node IDs along this path, ordered from the root node within the
+  /// `Document`, to the [targetNodeId].
+  final List<String> nodeIds;
+
+  /// The depth of this node in the document tree, with root nodes having
+  /// a depth of zero.
+  int get depth => nodeIds.length - 1;
+
+  /// Returns `true` if this path is at least [depth] deep.
+  bool hasDepth(int depth) => depth < nodeIds.length;
+
+  /// Returns the node ID within this path at the given [depth].
+  String atDepth(int depth) => nodeIds[depth];
+
+  /// The [DocumentNode] to which this path points.
+  String get targetNodeId => nodeIds.last;
+
+  NodePath addSubPath(String nodeId) => NodePath([...nodeIds, nodeId]);
+
+  @override
+  String toString() => "[NodePath] - ${nodeIds.join(" > ")}";
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NodePath &&
+          runtimeType == other.runtimeType &&
+          const DeepCollectionEquality().equals(nodeIds, other.nodeIds);
+
+  @override
+  int get hashCode => const ListEquality().hash(nodeIds);
+}
+
+/// A [DocumentNode] that contains other [DocumentNode]s in a hierarchy.
+///
+/// [CompositeDocumentNode]s can contain more [CompositeDocumentNode]s. There's no
+/// logical restriction on the depth of this hierarchy. However, the effect of a multi-level
+/// hierarchy depends on the document layout and components that are used within a
+/// given editor.
+class CompositeDocumentNode extends DocumentNode {
+  CompositeDocumentNode(this.id, this._nodes)
+      : assert(_nodes.isNotEmpty, "CompositeDocumentNode's must contain at least 1 inner node.");
+
+  @override
+  final String id;
+
+  Iterable<DocumentNode> get nodes => List.from(_nodes);
+  final List<DocumentNode> _nodes;
+
+  int get nodeCount => _nodes.length;
+
+  @override
+  NodePosition get beginningPosition => CompositeNodePosition(
+        compositeNodeId: id,
+        childNodeId: _nodes.first.id,
+        childNodePosition: _nodes.first.beginningPosition,
+      );
+
+  @override
+  NodePosition get endPosition => CompositeNodePosition(
+        compositeNodeId: id,
+        childNodeId: _nodes.last.id,
+        childNodePosition: _nodes.last.endPosition,
+      );
+
+  @override
+  NodePosition selectUpstreamPosition(NodePosition position1, NodePosition position2) {
+    if (position1 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position1 but received a ${position1.runtimeType}');
+    }
+    if (position2 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position2 but received a ${position2.runtimeType}');
+    }
+
+    if (position1.compositeNodeId != id) {
+      throw Exception(
+          "Expected position1 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position1.compositeNodeId}");
+    }
+    if (position2.compositeNodeId != id) {
+      throw Exception(
+          "Expected position2 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position2.compositeNodeId}");
+    }
+
+    final position1NodeIndex = _findNodeIndexById(position1.childNodeId);
+    if (position1NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position1.childNodeId}");
+    }
+
+    final position2NodeIndex = _findNodeIndexById(position2.childNodeId);
+    if (position2NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position2.childNodeId}");
+    }
+
+    if (position1NodeIndex <= position2NodeIndex) {
+      return position1;
+    } else {
+      return position2;
+    }
+  }
+
+  @override
+  NodePosition selectDownstreamPosition(NodePosition position1, NodePosition position2) {
+    if (position1 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position1 but received a ${position1.runtimeType}');
+    }
+    if (position2 is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for position2 but received a ${position2.runtimeType}');
+    }
+
+    if (position1.compositeNodeId != id) {
+      throw Exception(
+          "Expected position1 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position1.compositeNodeId}");
+    }
+    if (position2.compositeNodeId != id) {
+      throw Exception(
+          "Expected position2 to refer to this CompositeNodePosition with ID '$id' but instead we received a position with node ID: ${position2.compositeNodeId}");
+    }
+
+    final position1NodeIndex = _findNodeIndexById(position1.childNodeId);
+    if (position1NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position1.childNodeId}");
+    }
+
+    final position2NodeIndex = _findNodeIndexById(position2.childNodeId);
+    if (position2NodeIndex == null) {
+      throw Exception("Couldn't find a child node with ID: ${position2.childNodeId}");
+    }
+
+    if (position1NodeIndex < position2NodeIndex) {
+      return position2;
+    } else {
+      return position1;
+    }
+  }
+
+  @override
+  CompositeNodeSelection computeSelection({required NodePosition base, required NodePosition extent}) {
+    if (base is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for base but received a ${base.runtimeType}');
+    }
+    if (extent is! CompositeNodePosition) {
+      throw Exception('Expected a CompositeNodePosition for extent but received a ${extent.runtimeType}');
+    }
+
+    return CompositeNodeSelection(base: base, extent: extent);
+  }
+
+  @override
+  bool containsPosition(Object position) {
+    // Composite nodes don't have a node position type. This query doesn't apply.
+    throw UnimplementedError();
+  }
+
+  int? _findNodeIndexById(String childNodeId) {
+    for (int i = 0; i < _nodes.length; i += 1) {
+      if (_nodes[i].id == childNodeId) {
+        return i;
+      }
+    }
+
+    return null;
+  }
+
+  @override
+  String? copyContent(NodeSelection selection) {
+    if (selection is! CompositeNodeSelection) {
+      return null;
+    }
+
+    if (selection.base.compositeNodeId != id) {
+      return null;
+    }
+
+    final baseNodeIndex = _findNodeIndexById(selection.base.childNodeId);
+    if (baseNodeIndex == null) {
+      return null;
+    }
+
+    final extentNodeIndex = _findNodeIndexById(selection.extent.childNodeId);
+    if (extentNodeIndex == null) {
+      return null;
+    }
+
+    if (baseNodeIndex == extentNodeIndex) {
+      // The selection sits entirely within a single node. Copy partial content
+      // from that node.
+      final childNode = _nodes[extentNodeIndex];
+      final childSelection = childNode.computeSelection(
+        base: selection.base.childNodePosition,
+        extent: selection.extent.childNodePosition,
+      );
+      return childNode.copyContent(childSelection);
+    }
+
+    // The selection spans some number of nodes. Collate content from all of those nodes.
+    final buffer = StringBuffer();
+    if (baseNodeIndex < extentNodeIndex) {
+      // The selection is in natural order. Grab content starting at the base
+      // position, all the way to the extent position.
+      final startNode = _nodes[baseNodeIndex];
+      buffer.writeln(startNode.copyContent(
+        startNode.computeSelection(base: selection.base.childNodePosition, extent: startNode.endPosition),
+      ));
+
+      for (int i = baseNodeIndex + 1; i < extentNodeIndex; i += 1) {
+        final node = _nodes[i];
+        buffer.writeln(
+          node.copyContent(
+            node.computeSelection(base: node.beginningPosition, extent: node.endPosition),
+          ),
+        );
+      }
+
+      final endNode = _nodes[extentNodeIndex];
+      buffer.write(endNode.copyContent(
+        endNode.computeSelection(base: endNode.beginningPosition, extent: selection.extent.childNodePosition),
+      ));
+    } else {
+      // The selection is in reverse order. Grab content starting at the extent
+      // position, all the way to the base position.
+      final startNode = _nodes[extentNodeIndex];
+      buffer.writeln(startNode.copyContent(
+        startNode.computeSelection(base: selection.extent.childNodePosition, extent: startNode.endPosition),
+      ));
+
+      for (int i = extentNodeIndex + 1; i < baseNodeIndex; i += 1) {
+        final node = _nodes[i];
+        buffer.writeln(
+          node.copyContent(
+            node.computeSelection(base: node.beginningPosition, extent: node.endPosition),
+          ),
+        );
+      }
+
+      final endNode = _nodes[baseNodeIndex];
+      buffer.write(endNode.copyContent(
+        endNode.computeSelection(base: endNode.beginningPosition, extent: selection.base.childNodePosition),
+      ));
+    }
+
+    return buffer.toString();
+  }
+
+  @override
+  DocumentNode copyAndReplaceMetadata(Map<String, dynamic> newMetadata) {
+    return copy();
+  }
+
+  @override
+  DocumentNode copyWithAddedMetadata(Map<String, dynamic> newProperties) {
+    return copy();
+  }
+
+  DocumentNode copy() {
+    return CompositeDocumentNode(id, List.from(_nodes));
+  }
+
+  @override
+  String toString() => "[CompositeNode] - $_nodes";
+}
+
+/// A selection within a single [CompositeDocumentNode].
+class CompositeNodeSelection implements NodeSelection {
+  const CompositeNodeSelection({
+    required this.base,
+    required this.extent,
+  });
+
+  final CompositeNodePosition base;
+  final CompositeNodePosition extent;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CompositeNodeSelection &&
+          runtimeType == other.runtimeType &&
+          base == other.base &&
+          extent == other.extent;
+
+  @override
+  int get hashCode => base.hashCode ^ extent.hashCode;
+}
+
+/// A [NodePosition] for a [CompositeDocumentNode], which is a node that contains
+/// other nodes in a node hierarchy.
+class CompositeNodePosition implements NodePosition {
+  const CompositeNodePosition({
+    required this.compositeNodeId,
+    required this.childNodeId,
+    required this.childNodePosition,
+  });
+
+  final String compositeNodeId;
+  final String childNodeId;
+  final NodePosition childNodePosition;
+
+  @override
+  bool isEquivalentTo(NodePosition other) {
+    if (other is! CompositeNodePosition) {
+      return false;
+    }
+
+    if (compositeNodeId != other.compositeNodeId || childNodeId != other.childNodeId) {
+      return false;
+    }
+
+    return childNodePosition.isEquivalentTo(other.childNodePosition);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CompositeNodePosition &&
+          runtimeType == other.runtimeType &&
+          compositeNodeId == other.compositeNodeId &&
+          childNodeId == other.childNodeId &&
+          childNodePosition == other.childNodePosition;
+
+  @override
+  int get hashCode => compositeNodeId.hashCode ^ childNodeId.hashCode ^ childNodePosition.hashCode;
 }
 
 /// Marker interface for a selection within a [DocumentNode].

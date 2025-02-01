@@ -253,6 +253,7 @@ class CancelComposingActionTagCommand extends EditCommand {
     executor.executeCommand(
       RemoveTextAttributionsCommand(
         documentRange: textNode!.selectionBetween(
+          extent.documentPath,
           composingToken.indexedTag.startOffset,
           composingToken.indexedTag.endOffset,
         ),
@@ -262,6 +263,7 @@ class CancelComposingActionTagCommand extends EditCommand {
     executor.executeCommand(
       AddTextAttributionsCommand(
         documentRange: textNode.selectionBetween(
+          extent.documentPath,
           composingToken.indexedTag.startOffset,
           composingToken.indexedTag.startOffset + 1,
         ),
@@ -346,6 +348,7 @@ class ActionTagComposingReaction extends EditReaction {
         continue;
       }
 
+      final nodePath = document.getPathByNodeId(change.nodeId)!;
       final node = document.getNodeById(change.nodeId);
       if (node is! TextNode) {
         continue;
@@ -354,7 +357,7 @@ class ActionTagComposingReaction extends EditReaction {
       // The content in a TextNode changed. Check for the existence of any
       // out-of-sync cancelled tags and fix them.
       healChangeRequests.addAll(
-        _healCancelledTagsInTextNode(requestDispatcher, node),
+        _healCancelledTagsInTextNode(requestDispatcher, nodePath, node),
       );
     }
 
@@ -362,7 +365,8 @@ class ActionTagComposingReaction extends EditReaction {
     requestDispatcher.execute(healChangeRequests);
   }
 
-  List<EditRequest> _healCancelledTagsInTextNode(RequestDispatcher requestDispatcher, TextNode node) {
+  List<EditRequest> _healCancelledTagsInTextNode(
+      RequestDispatcher requestDispatcher, NodePath nodePath, TextNode node) {
     final cancelledTagRanges = node.text.getAttributionSpansInRange(
       attributionFilter: (a) => a == actionTagCancelledAttribution,
       range: SpanRange(0, node.text.length - 1),
@@ -382,12 +386,12 @@ class ActionTagComposingReaction extends EditReaction {
         // This cancelled range includes more than just a trigger. Reduce it back
         // down to the trigger.
         final triggerIndex = cancelledText.indexOf(_tagRule.trigger);
-        addedRange = node.selectionBetween(triggerIndex, triggerIndex);
+        addedRange = node.selectionBetween(nodePath, triggerIndex, triggerIndex);
       }
 
       changeRequests.addAll([
         RemoveTextAttributionsRequest(
-          documentRange: node.selectionBetween(range.start, range.end),
+          documentRange: node.selectionBetween(nodePath, range.start, range.end),
           attributions: {actionTagCancelledAttribution},
         ),
         if (addedRange != null) //

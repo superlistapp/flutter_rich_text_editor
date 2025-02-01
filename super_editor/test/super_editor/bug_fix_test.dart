@@ -10,10 +10,10 @@ void main() {
       testWidgets("bug repro", (tester) async {
         final document = MutableDocument.empty("1");
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
+          initialSelection: DocumentSelection.collapsed(
             position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
+              documentPath: NodePath.forNode("1"),
+              nodePosition: const TextNodePosition(offset: 0),
             ),
           ),
         );
@@ -46,11 +46,11 @@ void main() {
           ChangeSelectionRequest(
             DocumentSelection(
               base: DocumentPosition(
-                nodeId: document.getNodeAt(2)!.id,
+                documentPath: NodePath.forNode(document.getNodeAt(2)!.id),
                 nodePosition: document.getNodeAt(2)!.endPosition,
               ),
               extent: DocumentPosition(
-                nodeId: document.getNodeAt(1)!.id,
+                documentPath: NodePath.forNode(document.getNodeAt(1)!.id),
                 nodePosition: document.getNodeAt(1)!.beginningPosition,
               ),
             ),
@@ -70,22 +70,14 @@ void main() {
         expect(composer.selection!.isCollapsed, true);
         expect(
           composer.selection!.extent,
-          DocumentPosition(
-            nodeId: document.last.id,
-            nodePosition: const TextNodePosition(offset: 0),
-          ),
+          TextNode.caretAt([document.last.id], 0),
         );
       });
 
       testWidgets("related to bug", (tester) async {
         final document = MutableDocument.empty("1");
         final composer = MutableDocumentComposer(
-          initialSelection: const DocumentSelection.collapsed(
-            position: DocumentPosition(
-              nodeId: "1",
-              nodePosition: TextNodePosition(offset: 0),
-            ),
-          ),
+          initialSelection: TextNode.caretAt(["1"], 0),
         );
         final editor = createDefaultDocumentEditor(document: document, composer: composer);
 
@@ -113,11 +105,11 @@ void main() {
           ChangeSelectionRequest(
             DocumentSelection(
               base: DocumentPosition(
-                nodeId: document.getNodeAt(1)!.id,
+                documentPath: NodePath.forNode(document.getNodeAt(1)!.id),
                 nodePosition: document.getNodeAt(1)!.beginningPosition,
               ),
               extent: DocumentPosition(
-                nodeId: document.getNodeAt(2)!.id,
+                documentPath: NodePath.forNode(document.getNodeAt(2)!.id),
                 nodePosition: document.getNodeAt(2)!.endPosition,
               ),
             ),
@@ -136,13 +128,7 @@ void main() {
         // selection works, too.
         expect(document.nodeCount, 2);
         expect(composer.selection!.isCollapsed, true);
-        expect(
-          composer.selection!.extent,
-          DocumentPosition(
-            nodeId: document.last.id,
-            nodePosition: const TextNodePosition(offset: 0),
-          ),
-        );
+        expect(composer.selection!.extent, TextNode.caretAt([document.last.id], 0));
       });
     });
   });

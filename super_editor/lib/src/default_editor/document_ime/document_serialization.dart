@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:super_editor/src/core/document.dart';
 import 'package:super_editor/src/core/document_selection.dart';
@@ -37,15 +38,37 @@ class DocumentImeSerializer {
   final Document _doc;
   DocumentSelection selection;
   DocumentRange? composingRegion;
-  final imeRangesToDocTextNodes = <TextRange, String>{};
-  final docTextNodesToImeRanges = <String, TextRange>{};
+  final imeRangesToDocTextNodes = <TextRange, NodePath>{};
+  final docTextNodesToImeRanges = <NodePath, TextRange>{};
   final selectedNodes = <DocumentNode>[];
   late String imeText;
   final PrependedCharacterPolicy _prependedCharacterPolicy;
   String _prependedPlaceholder = '';
 
+  // TextNode(1) - Hello world
+  // TextNode(2) - Paragraph 2
+  // ImageNode(3)
+  // TextNode(4) - YOLO
+  // CompositeNode(5)
+  //    TextNode(6) - Inner paragraph
+  //    ListItemNode(7) - Item 1
+  //    ListItemNode(8) - Item 2
+  //    ListItemNode(9) - Item 3
+  // TextNode(10) - Final paragraph
+
+  // CompositeNode(5)
+  //    TextNode(6) - Inner para|graph
+  //
+  // CompositeNodePosition
+  //  - node ID: "5"
+  //  - child node ID: "6"
+  //  - child node position: TextNodePosition(offset: 10)
+  //
+  // .Inner Paragraph
+
   void _serialize() {
     editorImeLog.fine("Creating an IME model from document, selection, and composing region");
+    print("Serializing document to send to the IME");
     final buffer = StringBuffer();
     int characterCount = 0;
 
@@ -65,6 +88,8 @@ class DocumentImeSerializer {
       _prependedPlaceholder = '';
     }
 
+    print("Selection: $selection");
+    print("");
     selectedNodes.clear();
     selectedNodes.addAll(_doc.getNodesInContentOrder(selection));
     for (int i = 0; i < selectedNodes.length; i += 1) {
@@ -78,14 +103,23 @@ class DocumentImeSerializer {
         characterCount += 1;
       }
 
-      final node = selectedNodes[i];
+      var node = selectedNodes[i];
+      final nodePath = NodePath.forNode(node.id);
+      print("Serializing node for IME: $node");
+      if (node is CompositeDocumentNode) {
+        final serializedCharacterCount = _serializeCompositeNode(NodePath.forNode(node.id), node, buffer);
+        characterCount += serializedCharacterCount;
+
+        continue;
+      }
+
       if (node is! TextNode) {
         buffer.write('~');
         characterCount += 1;
 
         final imeRange = TextRange(start: characterCount - 1, end: characterCount);
-        imeRangesToDocTextNodes[imeRange] = node.id;
-        docTextNodesToImeRanges[node.id] = imeRange;
+        imeRangesToDocTextNodes[imeRange] = nodePath;
+        docTextNodesToImeRanges[nodePath] = imeRange;
 
         continue;
       }
@@ -94,8 +128,8 @@ class DocumentImeSerializer {
       // so that we can easily convert between the two, when requested.
       final imeRange = TextRange(start: characterCount, end: characterCount + node.text.length);
       editorImeLog.finer("IME range $imeRange -> text node content '${node.text.toPlainText()}'");
-      imeRangesToDocTextNodes[imeRange] = node.id;
-      docTextNodesToImeRanges[node.id] = imeRange;
+      imeRangesToDocTextNodes[imeRange] = nodePath;
+      docTextNodesToImeRanges[nodePath] = imeRange;
 
       // Concatenate this node's text with the previous nodes.
       buffer.write(node.text.toPlainText());
@@ -104,6 +138,49 @@ class DocumentImeSerializer {
 
     imeText = buffer.toString();
     editorImeLog.fine("IME serialization:\n'$imeText'");
+  }
+
+  int _serializeCompositeNode(NodePath nodePath, CompositeDocumentNode node, StringBuffer buffer) {
+    int characterCount = 0;
+    for (final innerNode in node.nodes) {
+      final innerNodePath = nodePath.addSubPath(innerNode.id);
+      if (innerNode is CompositeDocumentNode) {
+        characterCount += _serializeCompositeNode(innerNodePath, innerNode, buffer);
+        continue;
+      }
+
+      characterCount += _serializeNonCompositeNode(innerNodePath, node, buffer, characterCount);
+
+      if (innerNode != node.nodes.last) {
+        buffer.write('\n');
+        characterCount += 1;
+      }
+    }
+
+    return characterCount;
+  }
+
+  int _serializeNonCompositeNode(NodePath nodePath, DocumentNode node, StringBuffer buffer, int characterCount) {
+    if (node is! TextNode) {
+      buffer.write('~');
+
+      final imeRange = TextRange(start: characterCount - 1, end: characterCount);
+      imeRangesToDocTextNodes[imeRange] = nodePath;
+      docTextNodesToImeRanges[nodePath] = imeRange;
+
+      return 1;
+    }
+
+    // Cache mappings between the IME text range and the document position
+    // so that we can easily convert between the two, when requested.
+    final imeRange = TextRange(start: characterCount, end: characterCount + node.text.length);
+    editorImeLog.finer("IME range $imeRange -> text node content '${node.text.text}'");
+    imeRangesToDocTextNodes[imeRange] = nodePath;
+    docTextNodesToImeRanges[nodePath] = imeRange;
+
+    // Concatenate this node's text with the previous nodes.
+    buffer.write(node.text.text);
+    return node.text.length;
   }
 
   bool _shouldPrependPlaceholder() {
@@ -265,28 +342,54 @@ class DocumentImeSerializer {
   DocumentPosition _imeToDocumentPosition(TextPosition imePosition, {required bool isUpstream}) {
     for (final range in imeRangesToDocTextNodes.keys) {
       if (range.start <= imePosition.offset && imePosition.offset <= range.end) {
-        final node = _doc.getNodeById(imeRangesToDocTextNodes[range]!)!;
+        final nodePath = imeRangesToDocTextNodes[range]!;
+        final node = _doc.getNodeById(nodePath.nodeIds.last)!;
 
+        late NodePosition contentNodePosition;
         if (node is TextNode) {
-          return DocumentPosition(
-            nodeId: imeRangesToDocTextNodes[range]!,
-            nodePosition: TextNodePosition(offset: imePosition.offset - range.start),
-          );
+          contentNodePosition = TextNodePosition(offset: imePosition.offset - range.start);
+          // return DocumentPosition(
+          //   nodeId: node.id,
+          //   nodePosition: TextNodePosition(offset: imePosition.offset - range.start),
+          // );
         } else {
           if (imePosition.offset <= range.start) {
             // Return a position at the start of the node.
-            return DocumentPosition(
-              nodeId: node.id,
-              nodePosition: node.beginningPosition,
-            );
+            contentNodePosition = node.beginningPosition;
+            // return DocumentPosition(
+            //   nodeId: node.id,
+            //   nodePosition: node.beginningPosition,
+            // );
           } else {
             // Return a position at the end of the node.
-            return DocumentPosition(
-              nodeId: node.id,
-              nodePosition: node.endPosition,
-            );
+            contentNodePosition = node.endPosition;
+            // return DocumentPosition(
+            //   nodeId: node.id,
+            //   nodePosition: node.endPosition,
+            // );
           }
         }
+
+        if (nodePath.nodeIds.length == 1) {
+          // This is a single node - not a composite node. Return it as-is.
+          return DocumentPosition(
+            documentPath: nodePath,
+            nodePosition: contentNodePosition,
+          );
+        }
+
+        NodePosition compositeNodePosition = contentNodePosition;
+        for (int i = nodePath.nodeIds.length - 2; i >= 0; i -= 1) {
+          compositeNodePosition = CompositeNodePosition(
+            compositeNodeId: nodePath.nodeIds[i],
+            childNodeId: nodePath.nodeIds[i + 1],
+            childNodePosition: compositeNodePosition,
+          );
+        }
+        return DocumentPosition(
+          documentPath: NodePath([nodePath.nodeIds.first]),
+          nodePosition: compositeNodePosition,
+        );
       }
     }
 
@@ -303,11 +406,15 @@ class DocumentImeSerializer {
     editorImeLog.shout("IME Ranges to text nodes:");
     for (final entry in imeRangesToDocTextNodes.entries) {
       editorImeLog.shout(" - IME range: ${entry.key} -> Text node: ${entry.value}");
-      editorImeLog.shout("    ^ node content: '${(_doc.getNodeById(entry.value) as TextNode).text.toPlainText()}'");
+      editorImeLog.shout("    ^ node content: '${_getTextNodeAtNodePath(entry.value).text.toPlainText()}'");
     }
     editorImeLog.shout("-----------------------------------------------------------");
     throw Exception(
         "Couldn't map an IME position to a document position. \nTextEditingValue: '$imeText'\nIME position: $imePosition");
+  }
+
+  TextNode _getTextNodeAtNodePath(NodePath path) {
+    return _doc.getNodeById(path.nodeIds.last) as TextNode;
   }
 
   TextSelection documentToImeSelection(DocumentSelection docSelection) {
@@ -346,9 +453,15 @@ class DocumentImeSerializer {
 
   TextPosition _documentToImePosition(DocumentPosition docPosition) {
     editorImeLog.fine("Converting DocumentPosition to IME TextPosition: $docPosition");
-    final imeRange = docTextNodesToImeRanges[docPosition.nodeId];
+    // FIXME: don't assume top-level node
+    final nodePath = NodePath.forNode(docPosition.nodeId);
+    final imeRange = docTextNodesToImeRanges[nodePath];
     if (imeRange == null) {
-      throw Exception("No such document position in the IME content: $docPosition");
+      print("Available node paths in mapping:");
+      for (final entry in docTextNodesToImeRanges.entries) {
+        print(" - ${entry.key}");
+      }
+      throw Exception("No such node path in the IME content: $nodePath");
     }
 
     final nodePosition = docPosition.nodePosition;
@@ -369,6 +482,16 @@ class DocumentImeSerializer {
 
     if (nodePosition is TextNodePosition) {
       return TextPosition(offset: imeRange.start + (docPosition.nodePosition as TextNodePosition).offset);
+    }
+
+    if (nodePosition is CompositeNodePosition) {
+      final innerDocumentPosition = DocumentPosition(
+        documentPath: docPosition.documentPath.addSubPath(nodePosition.childNodeId),
+        nodePosition: nodePosition.childNodePosition,
+      );
+
+      // Recursive call to create the IME text position for the content within the composite node.
+      return _documentToImePosition(innerDocumentPosition);
     }
 
     throw Exception("Super Editor doesn't know how to convert a $nodePosition into an IME-compatible selection");

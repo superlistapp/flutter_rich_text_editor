@@ -146,7 +146,7 @@ class SuperEditorAddEmptyParagraphTapHandler extends ContentTapDelegate {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: newNodeId,
+            documentPath: document.getPathByNodeId(newNodeId)!,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),

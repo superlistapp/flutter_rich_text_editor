@@ -259,14 +259,20 @@ class SuperEditorInspector {
   /// center of the character at [textOffset2] within the node with the given [nodeId].
   ///
   /// {@macro supereditor_finder}
-  static Offset findDeltaBetweenCharactersInTextNode(String nodeId, int textOffset1, int textOffset2,
+  static Offset findDeltaBetweenCharactersInTextNode(NodePath nodePath, int textOffset1, int textOffset2,
       [Finder? superEditorFinder]) {
     final docLayout = findDocumentLayout(superEditorFinder);
     final characterBoxStart = docLayout.getRectForPosition(
-      DocumentPosition(nodeId: nodeId, nodePosition: TextNodePosition(offset: textOffset1)),
+      DocumentPosition(
+        documentPath: nodePath,
+        nodePosition: TextNodePosition(offset: textOffset1),
+      ),
     );
     final characterBoxEnd = docLayout.getRectForPosition(
-      DocumentPosition(nodeId: nodeId, nodePosition: TextNodePosition(offset: textOffset2)),
+      DocumentPosition(
+        documentPath: nodePath,
+        nodePosition: TextNodePosition(offset: textOffset2),
+      ),
     );
     return characterBoxEnd!.center - characterBoxStart!.center;
   }

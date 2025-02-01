@@ -198,15 +198,16 @@ void main() {
 
       // Press the upstream drag handle and drag it downstream until "Lorem|" to collapse the selection.
       final gesture = await tester.pressDownOnUpstreamMobileHandle();
-      await gesture.moveBy(SuperEditorInspector.findDeltaBetweenCharactersInTextNode('1', 0, 5));
+      await gesture.moveBy(SuperEditorInspector.findDeltaBetweenCharactersInTextNode(NodePath.forNode('1'), 0, 5));
       await tester.pump();
 
       // Ensure that the selection collapsed.
       expect(
         SuperEditorInspector.findDocumentSelection(),
         selectionEquivalentTo(
-          const DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: '1', nodePosition: TextNodePosition(offset: 5)),
+          DocumentSelection.collapsed(
+            position:
+                DocumentPosition(documentPath: NodePath.forNode('1'), nodePosition: const TextNodePosition(offset: 5)),
           ),
         ),
       );
@@ -214,7 +215,7 @@ void main() {
       // Find the rectangle for the selected character.
       final documentLayout = SuperEditorInspector.findDocumentLayout();
       final selectedPositionRect = documentLayout.getRectForPosition(
-        const DocumentPosition(nodeId: '1', nodePosition: TextNodePosition(offset: 5)),
+        DocumentPosition(documentPath: NodePath.forNode('1'), nodePosition: const TextNodePosition(offset: 5)),
       )!;
 
       // Ensure that the drag handles are visible and in the correct location.

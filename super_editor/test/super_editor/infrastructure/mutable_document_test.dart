@@ -15,23 +15,23 @@ void main() {
 
       // Try to get an upstream range.
       final range = document.getRangeBetween(
-        const DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 20)),
-        const DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 10)),
+        DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 20)),
+        DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 10)),
       );
 
       // Ensure the range is upstream.
       expect(
         range.start,
-        const DocumentPosition(
-          nodeId: "1",
-          nodePosition: TextNodePosition(offset: 10),
+        DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 10),
         ),
       );
       expect(
         range.end,
-        const DocumentPosition(
-          nodeId: "1",
-          nodePosition: TextNodePosition(offset: 20),
+        DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 20),
         ),
       );
     });
@@ -48,23 +48,23 @@ void main() {
 
       // Try to get an upstream range.
       final range = document.getRangeBetween(
-        const DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 10)),
-        const DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 20)),
+        DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 10)),
+        DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 20)),
       );
 
       // Ensure the range is upstream.
       expect(
         range.start,
-        const DocumentPosition(
-          nodeId: "1",
-          nodePosition: TextNodePosition(offset: 10),
+        DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 10),
         ),
       );
       expect(
         range.end,
-        const DocumentPosition(
-          nodeId: "1",
-          nodePosition: TextNodePosition(offset: 20),
+        DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 20),
         ),
       );
     });

@@ -73,13 +73,14 @@ class HeaderConversionReaction extends ParagraphPrefixConversionReaction {
     final prefixLength = match.length - 1; // -1 for the space on the end
     late Attribution headerAttribution = _getHeaderAttributionForLevel(prefixLength);
 
+    final paragraphPath = editContext.document.getPathByNodeId(paragraph.id)!;
     final paragraphPatternSelection = DocumentSelection(
       base: DocumentPosition(
-        nodeId: paragraph.id,
+        documentPath: paragraphPath,
         nodePosition: const TextNodePosition(offset: 0),
       ),
       extent: DocumentPosition(
-        nodeId: paragraph.id,
+        documentPath: paragraphPath,
         nodePosition: TextNodePosition(offset: paragraph.text.toPlainText().indexOf(" ") + 1),
       ),
     );
@@ -102,7 +103,7 @@ class HeaderConversionReaction extends ParagraphPrefixConversionReaction {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: paragraph.id,
+            documentPath: editContext.document.getPathByNodeId(paragraph.id)!,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),
@@ -146,7 +147,7 @@ class UnorderedListItemConversionReaction extends ParagraphPrefixConversionReact
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: paragraph.id,
+            documentPath: editContext.document.getPathByNodeId(paragraph.id)!,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),
@@ -218,7 +219,7 @@ class OrderedListItemConversionReaction extends ParagraphPrefixConversionReactio
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: paragraph.id,
+            documentPath: editContext.document.getPathByNodeId(paragraph.id)!,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),
@@ -263,7 +264,7 @@ class BlockquoteConversionReaction extends ParagraphPrefixConversionReaction {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: paragraph.id,
+            documentPath: editContext.document.getPathByNodeId(paragraph.id)!,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),
@@ -324,11 +325,12 @@ class HorizontalRuleConversionReaction extends EditReaction {
     // - Remove the dashes and the space.
     // - Insert a horizontal rule before the paragraph.
     // - Place caret at the start of the paragraph.
+    final paragraphPath = document.getPathByNodeId(paragraph.id)!;
     requestDispatcher.execute([
       DeleteContentRequest(
         documentRange: DocumentRange(
-          start: DocumentPosition(nodeId: paragraph.id, nodePosition: const TextNodePosition(offset: 0)),
-          end: DocumentPosition(nodeId: paragraph.id, nodePosition: TextNodePosition(offset: match.length)),
+          start: DocumentPosition(documentPath: paragraphPath, nodePosition: const TextNodePosition(offset: 0)),
+          end: DocumentPosition(documentPath: paragraphPath, nodePosition: TextNodePosition(offset: match.length)),
         ),
       ),
       InsertNodeAtIndexRequest(
@@ -340,7 +342,7 @@ class HorizontalRuleConversionReaction extends EditReaction {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: paragraph.id,
+            documentPath: paragraphPath,
             nodePosition: const TextNodePosition(offset: 0),
           ),
         ),
@@ -819,13 +821,14 @@ class LinkifyReaction extends EditReaction {
       range: rangeToUpdate,
     );
 
+    final changeNodePath = document.getPathByNodeId(changedNodeId)!;
     final linkRange = DocumentRange(
       start: DocumentPosition(
-        nodeId: changedNodeId,
+        documentPath: changeNodePath,
         nodePosition: TextNodePosition(offset: rangeToUpdate.start),
       ),
       end: DocumentPosition(
-        nodeId: changedNodeId,
+        documentPath: changeNodePath,
         nodePosition: TextNodePosition(offset: rangeToUpdate.end + 1),
       ),
     );
@@ -1042,18 +1045,23 @@ class DashConversionReaction extends EditReaction {
 
     // A dash was inserted after another dash.
     // Convert the two dashes to an em-dash.
+    final insertionNodePath = document.getPathByNodeId(insertionNode.id)!;
     requestDispatcher.execute([
       DeleteContentRequest(
         documentRange: DocumentRange(
           start: DocumentPosition(
-              nodeId: insertionNode.id, nodePosition: TextNodePosition(offset: dashInsertionEvent.offset - 1)),
+            documentPath: insertionNodePath,
+            nodePosition: TextNodePosition(offset: dashInsertionEvent.offset - 1),
+          ),
           end: DocumentPosition(
-              nodeId: insertionNode.id, nodePosition: TextNodePosition(offset: dashInsertionEvent.offset + 1)),
+            documentPath: insertionNodePath,
+            nodePosition: TextNodePosition(offset: dashInsertionEvent.offset + 1),
+          ),
         ),
       ),
       InsertTextRequest(
         documentPosition: DocumentPosition(
-          nodeId: insertionNode.id,
+          documentPath: insertionNodePath,
           nodePosition: TextNodePosition(
             offset: dashInsertionEvent.offset - 1,
           ),
@@ -1064,7 +1072,7 @@ class DashConversionReaction extends EditReaction {
       ChangeSelectionRequest(
         DocumentSelection.collapsed(
           position: DocumentPosition(
-            nodeId: insertionNode.id,
+            documentPath: insertionNodePath,
             nodePosition: TextNodePosition(offset: dashInsertionEvent.offset),
           ),
         ),

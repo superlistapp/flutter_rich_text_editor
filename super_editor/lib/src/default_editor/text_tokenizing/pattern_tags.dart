@@ -360,10 +360,12 @@ class PatternTagReaction extends EditReaction {
     editorPatternTagsLog.fine(
         "Found a pattern tag around caret: '${tagAroundCaret.indexedTag.tag}' - surrounding it with an attribution: ${tagAroundCaret.indexedTag.startOffset} -> ${tagAroundCaret.indexedTag.endOffset}");
 
+    final nodePath = document.getPathByNodeId(selectedNode.id)!;
     requestDispatcher.execute([
       // Remove the old pattern tag attribution(s).
       RemoveTextAttributionsRequest(
         documentRange: selectedNode.selectionBetween(
+          nodePath,
           tagAroundCaret.indexedTag.startOffset,
           tagAroundCaret.indexedTag.endOffset,
         ),
@@ -376,6 +378,7 @@ class PatternTagReaction extends EditReaction {
       // Add the new/updated pattern tag attribution.
       AddTextAttributionsRequest(
         documentRange: selectedNode.selectionBetween(
+          nodePath,
           tagAroundCaret.indexedTag.startOffset,
           tagAroundCaret.indexedTag.endOffset,
         ),
@@ -412,12 +415,13 @@ class PatternTagReaction extends EditReaction {
 
     editorPatternTagsLog.info("Checking edited text nodes for back-to-back pattern tags that need to be split apart");
     for (final textEdit in textEdits) {
+      final nodePath = document.getPathByNodeId(textEdit.nodeId)!;
       final node = document.getNodeById(textEdit.nodeId) as TextNode;
-      _splitBackToBackTagsInTextNode(requestDispatcher, node);
+      _splitBackToBackTagsInTextNode(requestDispatcher, nodePath, node);
     }
   }
 
-  void _splitBackToBackTagsInTextNode(RequestDispatcher requestDispatcher, TextNode node) {
+  void _splitBackToBackTagsInTextNode(RequestDispatcher requestDispatcher, NodePath nodePath, TextNode node) {
     final patternTags = node.text.getAttributionSpansByFilter(
       (attribution) => attribution is PatternTagAttribution,
     );
@@ -481,6 +485,7 @@ class PatternTagReaction extends EditReaction {
       for (final removal in spanRemovals)
         RemoveTextAttributionsRequest(
           documentRange: node.selectionBetween(
+            nodePath,
             removal.start,
             removal.end + 1,
           ),
@@ -491,6 +496,7 @@ class PatternTagReaction extends EditReaction {
       for (final creation in spanCreations)
         AddTextAttributionsRequest(
           documentRange: node.selectionBetween(
+            nodePath,
             creation.start,
             creation.end + 1,
           ),
@@ -536,6 +542,7 @@ class PatternTagReaction extends EditReaction {
     final document = editContext.document;
     final removeTagRequests = <EditRequest>{};
     for (final nodeId in nodesToInspect) {
+      final textNodePath = document.getPathByNodeId(nodeId)!;
       final textNode = document.getNodeById(nodeId) as TextNode;
       final allTags = textNode.text.getAttributionSpansInRange(
         attributionFilter: (attribution) => attribution is PatternTagAttribution,
@@ -549,6 +556,7 @@ class PatternTagReaction extends EditReaction {
           removeTagRequests.add(
             RemoveTextAttributionsRequest(
               documentRange: textNode.selectionBetween(
+                textNodePath,
                 tag.start,
                 tag.end + 1,
               ),

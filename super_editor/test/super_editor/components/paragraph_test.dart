@@ -196,15 +196,15 @@ void main() {
 
         // Select from the paragraph across the HR.
         editContext.editor.execute([
-          const ChangeSelectionRequest(
+          ChangeSelectionRequest(
             DocumentSelection(
               base: DocumentPosition(
-                nodeId: "1",
-                nodePosition: TextNodePosition(offset: 5),
+                documentPath: NodePath.forNode("1"),
+                nodePosition: const TextNodePosition(offset: 5),
               ),
               extent: DocumentPosition(
-                nodeId: "2",
-                nodePosition: UpstreamDownstreamNodePosition.downstream(),
+                documentPath: NodePath.forNode("2"),
+                nodePosition: const UpstreamDownstreamNodePosition.downstream(),
               ),
             ),
             SelectionChangeType.expandSelection,

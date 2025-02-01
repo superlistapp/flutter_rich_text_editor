@@ -62,6 +62,7 @@ class _AttributionBoundsState extends ContentLayerState<AttributionBounds, List<
       if (node is! TextNode) {
         continue;
       }
+      final nodePath = widget.document.getPathByNodeId(node.id)!;
 
       final spans = node.text.getAttributionSpansInRange(
         attributionFilter: widget.selector,
@@ -70,8 +71,8 @@ class _AttributionBoundsState extends ContentLayerState<AttributionBounds, List<
 
       for (final span in spans) {
         final range = DocumentRange(
-          start: DocumentPosition(nodeId: node.id, nodePosition: TextNodePosition(offset: span.start)),
-          end: DocumentPosition(nodeId: node.id, nodePosition: TextNodePosition(offset: span.end + 1)),
+          start: DocumentPosition(documentPath: nodePath, nodePosition: TextNodePosition(offset: span.start)),
+          end: DocumentPosition(documentPath: nodePath, nodePosition: TextNodePosition(offset: span.end + 1)),
         );
 
         bounds.add(

@@ -5,7 +5,10 @@ void main() {
   group("Document selection", () {
     group("selects upstream position", () {
       test("when the positions are the same", () {
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
         expect(
           _testDoc.selectUpstreamPosition(position, position),
           position,
@@ -13,8 +16,14 @@ void main() {
       });
 
       test("when the positions are in the same node", () {
-        const position1 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
-        const position2 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1));
+        final position1 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
+        final position2 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 1),
+        );
         expect(
           _testDoc.selectUpstreamPosition(position1, position2),
           position1,
@@ -26,8 +35,14 @@ void main() {
       });
 
       test("when the positions are in different nodes", () {
-        const position1 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
-        const position2 = DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0));
+        final position1 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
+        final position2 = DocumentPosition(
+          documentPath: NodePath.forNode("2"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
         expect(
           _testDoc.selectUpstreamPosition(position1, position2),
           position1,
@@ -41,7 +56,10 @@ void main() {
 
     group("selects downstream position", () {
       test("when the positions are the same", () {
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
         expect(
           _testDoc.selectDownstreamPosition(position, position),
           position,
@@ -49,8 +67,14 @@ void main() {
       });
 
       test("when the positions are in the same node", () {
-        const position1 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
-        const position2 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1));
+        final position1 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
+        final position2 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 1),
+        );
         expect(
           _testDoc.selectDownstreamPosition(position1, position2),
           position2,
@@ -62,8 +86,14 @@ void main() {
       });
 
       test("when the positions are in different nodes", () {
-        const position1 = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
-        const position2 = DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0));
+        final position1 = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
+        final position2 = DocumentPosition(
+          documentPath: NodePath.forNode("2"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
         expect(
           _testDoc.selectDownstreamPosition(position1, position2),
           position2,
@@ -77,112 +107,125 @@ void main() {
 
     group("knows if it contains a position", () {
       test("when the selection is collapsed", () {
-        const selection = DocumentSelection.collapsed(
-            position: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)));
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
+        final selection = TextNode.caretAt(["1"], 0);
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
         expect(_testDoc.doesSelectionContainPosition(selection, position), false);
       });
 
       test("when the selection is within one node and contains the position", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 2)),
+        final downstreamSelection = TextNode.selectionWithin(["1"], 0, 2);
+        final upstreamSelection = TextNode.selectionWithin(["1"], 2, 0);
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 1),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 2)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-        );
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1));
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), true);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), true);
       });
 
       test("when the selection is within one node and the position sits before selection", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 2)),
+        final downstreamSelection = TextNode.selectionWithin(["1"], 1, 2);
+        final upstreamSelection = TextNode.selectionWithin(["1"], 2, 1);
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 2)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
-        );
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), false);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), false);
       });
 
       test("when the selection is within one node and the position sits after selection", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
+        final downstreamSelection = TextNode.selectionWithin(["1"], 0, 1);
+        final upstreamSelection = TextNode.selectionWithin(["1"], 1, 0);
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 2),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-        );
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 2));
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), false);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), false);
       });
 
       test("when the selection is across two nodes and contains the position", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
+        final downstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
+        final upstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 1),
+        );
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), true);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), true);
       });
 
       test("when the selection is across two nodes and the position comes before the selection", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
-          extent: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
+        final downstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 1)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 1)),
+        final upstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 1)),
         );
-        const position = DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("1"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), false);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), false);
       });
 
       test("when the selection is across two nodes and the position comes after the selection", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
+        final downstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
+        final upstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("2"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const position = DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 1));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("2"),
+          nodePosition: const TextNodePosition(offset: 1),
+        );
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), false);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), false);
       });
 
       test("when the selection is across three nodes and the position is in the middle", () {
-        const downstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 0)),
+        final downstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("3"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const upstreamSelection = DocumentSelection(
-          base: DocumentPosition(nodeId: "3", nodePosition: TextNodePosition(offset: 0)),
-          extent: DocumentPosition(nodeId: "1", nodePosition: TextNodePosition(offset: 0)),
+        final upstreamSelection = DocumentSelection(
+          base: DocumentPosition(documentPath: NodePath.forNode("3"), nodePosition: const TextNodePosition(offset: 0)),
+          extent:
+              DocumentPosition(documentPath: NodePath.forNode("1"), nodePosition: const TextNodePosition(offset: 0)),
         );
-        const position = DocumentPosition(nodeId: "2", nodePosition: TextNodePosition(offset: 0));
+        final position = DocumentPosition(
+          documentPath: NodePath.forNode("2"),
+          nodePosition: const TextNodePosition(offset: 0),
+        );
 
         expect(_testDoc.doesSelectionContainPosition(downstreamSelection, position), true);
         expect(_testDoc.doesSelectionContainPosition(upstreamSelection, position), true);

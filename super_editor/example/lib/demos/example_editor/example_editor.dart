@@ -115,7 +115,7 @@ class _ExampleEditorState extends State<ExampleEditor> {
       return;
     }
 
-    final selectedNode = _doc.getNodeById(selection.extent.nodeId);
+    final selectedNode = _doc.getNodeById(selection.extent.targetNodeId);
 
     if (selectedNode is ImageNode) {
       appLog.fine("Showing image toolbar");

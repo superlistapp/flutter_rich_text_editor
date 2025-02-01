@@ -39,12 +39,7 @@ Paragraph 2
       expect((insertedNode as ParagraphNode).text.toPlainText(), 'new paragraph');
       expect(
         SuperEditorInspector.findDocumentSelection(),
-        DocumentSelection.collapsed(
-          position: DocumentPosition(
-            nodeId: insertedNode.id,
-            nodePosition: const TextNodePosition(offset: 13),
-          ),
-        ),
+        TextNode.caretAt([insertedNode.id], 13),
       );
     });
 
@@ -78,12 +73,7 @@ Paragraph 2
       expect((insertedNode as ParagraphNode).text.toPlainText(), 'new paragraph');
       expect(
         SuperEditorInspector.findDocumentSelection(),
-        DocumentSelection.collapsed(
-          position: DocumentPosition(
-            nodeId: insertedNode.id,
-            nodePosition: const TextNodePosition(offset: 13),
-          ),
-        ),
+        TextNode.caretAt([insertedNode.id], 13),
       );
     });
   });
