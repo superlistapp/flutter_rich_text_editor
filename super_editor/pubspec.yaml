@@ -48,9 +48,16 @@ dependencies:
   flutter_test_robots: ^0.0.24
   clock: ^1.1.1
 
-#dependency_overrides:
-  # Override to local mono-repo path so devs can test this repo
-  # against changes that they're making to other mono-repo packages
+dependency_overrides:
+  # IMPORTANT! This is a temporary override to use the new scrollbar extension.
+  #
+  # Release a new flutter_test_robots version and remove this override before landing the PR.
+  flutter_test_robots:
+    git:
+      url: https://github.com/angelosilvestre/flutter_test_robots.git
+      ref: 22_scrollbar_extension
+# Override to local mono-repo path so devs can test this repo
+# against changes that they're making to other mono-repo packages
 #  attributed_text:
 #    path: ../attributed_text
 #  super_text_layout:

@@ -1,9 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test_robots/flutter_test_robots.dart';
 import 'package:flutter_test_runners/flutter_test_runners.dart';
 import 'package:super_editor/src/infrastructure/links.dart';
 import 'package:super_editor/src/infrastructure/platforms/android/selection_handles.dart';
@@ -520,26 +519,8 @@ spans multiple lines.''',
         )),
       );
 
-      // Find the approximate position of the scrollbar thumb.
-      final thumbLocation = tester.getTopRight(find.byType(SuperEditor)) + const Offset(-10, 10);
-
-      // Hover to make the thumb visible with a duration long enough to run the fade in animation.
-      final testPointer = TestPointer(1, PointerDeviceKind.mouse);
-
-      await tester.sendEventToBinding(testPointer.hover(thumbLocation, timeStamp: const Duration(seconds: 1)));
-      await tester.pumpAndSettle();
-
-      // Press the thumb.
-      await tester.sendEventToBinding(testPointer.down(thumbLocation));
-      await tester.pump(kTapMinTime);
-
-      // Move the thumb down.
-      await tester.sendEventToBinding(testPointer.move(thumbLocation + const Offset(0, 300)));
-      await tester.pump();
-
-      // Release the pointer.
-      await tester.sendEventToBinding(testPointer.up());
-      await tester.pump();
+      // Drag the scrollbar down.
+      await tester.dragScrollbar(300);
 
       // Ensure the content scrolled to the end of the document.
       expect(scrollController.position.pixels, moreOrLessEquals(770.0));
@@ -578,26 +559,8 @@ spans multiple lines.''',
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
       await tester.pump();
 
-      // Find the approximate position of the scrollbar thumb.
-      final thumbLocation = tester.getBottomRight(find.byType(SuperEditor)) - const Offset(10, 10);
-
-      // Hover to make the thumb visible with a duration long enough to run the fade in animation.
-      final testPointer = TestPointer(1, PointerDeviceKind.mouse);
-
-      await tester.sendEventToBinding(testPointer.hover(thumbLocation, timeStamp: const Duration(seconds: 1)));
-      await tester.pumpAndSettle();
-
-      // Press the thumb.
-      await tester.sendEventToBinding(testPointer.down(thumbLocation));
-      await tester.pump(kTapMinTime);
-
-      // Move the thumb up.
-      await tester.sendEventToBinding(testPointer.move(thumbLocation - const Offset(0, 300)));
-      await tester.pump();
-
-      // Release the pointer.
-      await tester.sendEventToBinding(testPointer.up());
-      await tester.pump();
+      // Drag the scrollbar up.
+      await tester.dragScrollbar(-300);
 
       // Ensure the content scrolled to the beginning of the document.
       expect(scrollController.position.pixels, 0);

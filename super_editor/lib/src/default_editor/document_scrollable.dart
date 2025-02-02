@@ -7,7 +7,6 @@ import 'package:super_editor/src/infrastructure/_logging.dart';
 import 'package:super_editor/src/infrastructure/documents/document_scroller.dart';
 import 'package:super_editor/src/infrastructure/flutter/build_context.dart';
 import 'package:super_editor/src/infrastructure/flutter/flutter_scheduler.dart';
-import 'package:super_editor/src/infrastructure/flutter/material_scrollbar.dart';
 import 'package:super_editor/src/infrastructure/scrolling_diagnostics/_scrolling_minimap.dart';
 
 import '../infrastructure/document_gestures.dart';
@@ -240,17 +239,8 @@ class _DocumentScrollableState extends State<DocumentScrollable> with SingleTick
       return child;
     }
 
-    // As we handle the scrolling gestures ourselves,
-    // we use NeverScrollableScrollPhysics to prevent SingleChildScrollView
-    // from scrolling. This also prevents the user from interacting
-    // with the scrollbar.
-    // We use a modified version of Flutter's Scrollbar that allows
-    // configuring it with a different scroll physics.
-    //
-    // See https://github.com/superlistapp/super_editor/issues/1628 for more details.
-    return ScrollbarWithCustomPhysics(
+    return Scrollbar(
       controller: _scrollController,
-      physics: behavior.getScrollPhysics(context),
       child: child,
     );
   }

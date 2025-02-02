@@ -1455,7 +1455,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(SuperEditor),
-          matching: find.byType(ScrollbarWithCustomPhysics),
+          matching: find.byType(Scrollbar),
         ),
         findsOneWidget,
       );
@@ -1487,7 +1487,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(SuperEditor),
-          matching: find.byType(ScrollbarWithCustomPhysics),
+          matching: find.byType(Scrollbar),
         ),
         findsNothing,
       );

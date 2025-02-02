@@ -94,7 +94,7 @@ jobs:
       - run: flutter test test_goldens
 
       # Archive golden failures
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: golden-failures
@@ -184,7 +184,6 @@ jobs:
       # Run all tests
       - run: flutter test
 
-
   analyze_super_text_layout:
     runs-on: ubuntu-latest
     defaults:
@@ -248,7 +247,7 @@ jobs:
       - run: flutter test test_goldens
 
       # Archive golden failures
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: golden-failures
