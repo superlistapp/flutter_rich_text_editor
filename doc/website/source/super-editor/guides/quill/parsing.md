@@ -4,7 +4,7 @@ contentRenderers:
   - jinja
   - markdown
 ---
-Super Editor supports parsing of Quill Delta documents into Super Editor documents.
+Super Editor supports parsing of [Quill Delta documents](https://quilljs.com/docs/delta/) into Super Editor documents.
 
 To get started with parsing Quill documents, add the Super Editor Quill package:
 

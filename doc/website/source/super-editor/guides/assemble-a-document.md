@@ -20,8 +20,8 @@ The `MutableDocument` constructor accepts a list of `DocumentNode`s as initial c
 final document = MutableDocument(
   nodes: [
     ParagraphNode(
-      id: Editor.createNodeId(),
-      text: AttributedText(text: "Hello, world!"),
+      id: "node1", 
+      text: AttributedText("Hello, world!"),
     ),
   ],
 );
@@ -33,24 +33,29 @@ A `MutableDocument` can be altered after construction.
 You can insert nodes.
 
 ```dart
-document.insertNodeAt(1, ParagraphNode(
-  id: Editor.createNodeId(),
-  text: AttributedText(text: "New paragraph"),
-),);
+document.insertNodeAt(
+  1,
+  ParagraphNode(
+    id: Editor.createNodeId(),
+    text: AttributedText("New paragraph"),
+  ),
+);
 ```
+
+`Editor.createNodeId()` is a convenience method that generates a random UUID string for the node.
 
 You can move nodes.
 
 ```dart
-document.moveNode(nodeId: "node1", targetIndex: 2);
+document.moveNode(nodeId: "node1", targetIndex: 1);
 ```
 
 You can remove nodes.
 
 ```dart
-document.deleteNodeAt(2);
+document.deleteNodeAt(0);
 ```
 
 If your goal is to use a `MutableDocument` in an editor experience, consider wrapping the
 `MutableDocument` in an `Editor`, and then use the standard edit pipeline to alter the document's
-content.
+content. [TODO: what is the standard editor pipeline? Let's link to those docs or give a brief explanation.]

@@ -2,6 +2,8 @@ layout: layouts/docs_page.jinja
 
 base_path: super-editor/guides/
 
+super_editor_version: "^0.3.0"
+
 navigation:
   show_contributors: false
 

@@ -14,6 +14,8 @@ dependencies:
   super_editor_markdown: ^{{ pub.super_editor_markdown.version }}
 ```
 
+[TODO: we use `any` for one and `^{{ pub.super_editor_markdown.version }}` for the other and in another guide we use a variable from `_data.yaml`. Should we use a consistent method or keep them as they are?]
+
 Parse a Markdown document by calling the provided global function:
 
 ```dart
@@ -77,19 +79,21 @@ final superEditorDocument = deserializeMarkdownToDocument(
 Markdown is sometimes extended with custom block syntaxes. These are non-standard syntaxes,
 and they're not understood by standard parsers, like the `markdown` package parser. However,
 the `markdown` package parser accepts `BlockSyntax` objects to parse custom Markdown blocks,
-and Super Editor Markdown forwards those `BlockSyntax`s.
+and Super Editor Markdown forwards those `BlockSyntax`es.
 
 To parse custom Markdown block syntaxes, pass your `BlockSyntax`s to 
 `deserializeMarkdownToDocument()`:
 
 ```dart
 final superEditorDocument = deserializeMarkdownToDocument(
-   markdownText,
-   customBockSyntax: [
-     const TableSyntax(),
-   ],
+  markdownText,
+  customBlockSyntax: [
+    const TableSyntax(),
+  ],
 );
 ```
+
+`TableSyntax` is an example custom `BlockSyntax` that you could create.
 
 ### Custom Super Editor Nodes
 When parsing custom Markdown syntaxes, you'll need to tell Super Editor Markdown how to
@@ -103,7 +107,7 @@ To customize how Markdown converts into Super Editor documents, provide custom
 ```dart
 final superEditorDocument = deserializeMarkdownToDocument(
    markdownText,
-   customBockSyntax: [
+   customBlockSyntax: [
      const TableSyntax(),
    ],
    customElementToNodeConverters: [
@@ -111,3 +115,5 @@ final superEditorDocument = deserializeMarkdownToDocument(
    ],
 );
 ```
+
+[TODO: Is there any documentation anywhere how to create a `BlockSyntax` or a `TableSyntax` or `MarkdownTableToNodeConverter`? This should be added here.]
