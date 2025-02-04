@@ -15,16 +15,27 @@ class BlinkController with ChangeNotifier {
   @visibleForTesting
   static bool indeterminateAnimationsEnabled = true;
 
+  /// Creates a [BlinkController] that uses a ticker to switch between visible
+  /// and invisible.
+  ///
+  /// If [animate] is `true`, the caret animates its [opacity] when switching
+  /// between visible and invisible. If [animate] is `false`, the caret
+  /// switches between fully opaque and fully transparent.
   BlinkController({
     required TickerProvider tickerProvider,
     Duration flashPeriod = const Duration(milliseconds: 500),
-  }) : _flashPeriod = flashPeriod {
+    bool animate = false,
+    Duration fadeDuration = const Duration(milliseconds: 200),
+  })  : _flashPeriod = flashPeriod,
+        _fadeDuration = fadeDuration,
+        _animate = animate {
     _ticker = tickerProvider.createTicker(_onTick);
   }
 
   BlinkController.withTimer({
     Duration flashPeriod = const Duration(milliseconds: 500),
-  }) : _flashPeriod = flashPeriod;
+  })  : _fadeDuration = Duration.zero,
+        _flashPeriod = flashPeriod;
 
   @override
   void dispose() {
@@ -39,10 +50,13 @@ class BlinkController with ChangeNotifier {
 
   Timer? _timer;
 
-  final Duration _flashPeriod;
-
   /// Duration to switch between visible and invisible.
   Duration get flashPeriod => _flashPeriod;
+  final Duration _flashPeriod;
+
+  /// Duration of the fade in or out transition when switching
+  /// between visible and invisible.
+  final Duration _fadeDuration;
 
   /// Returns `true` if this controller is currently animating a blinking
   /// signal, or `false` if it's not.
@@ -62,8 +76,33 @@ class BlinkController with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether or not the caret is currently visible.
+  ///
+  /// When [isVisible] switches from `true` to `false`, the [opacity] is
+  /// still greater than `0.0` while the fade-out animation is playing.
+  bool get isVisible => _isVisible;
   bool _isVisible = true;
-  double get opacity => _isVisible ? 1.0 : 0.0;
+
+  double get opacity => _opacity;
+  double _opacity = 1.0;
+
+  /// Whether or not the caret should animate its opacity.
+  ///
+  /// If `true`, the caret fades in and out when switching between visible
+  /// and invisible. If `false`, the caret switches between fully opaque
+  /// and fully transparent.
+  bool _animate = false;
+
+  /// Whether or not the caret is keeping the current opacity until the next blink.
+  ///
+  /// This is used to keep the caret fully opaque for the [_flashPeriod], before it
+  /// switches to `false` when the caret blinks for the first time. After [_isCaretOpaqueUntilNextBlink]
+  /// is set to `true`, the caret fades in and out.
+  ///
+  /// For example, when the user places the caret, we want it to be visible with
+  /// full opacity until the caret switches to invisible instead of immediately
+  /// start the fade out animation.
+  bool _isCaretOpaqueUntilNextBlink = false;
 
   void startBlinking() {
     if (!indeterminateAnimationsEnabled) {
@@ -73,6 +112,9 @@ class BlinkController with ChangeNotifier {
     }
 
     if (_ticker != null) {
+      // Don't animate the opacity until the flash period has elapsed.
+      _isCaretOpaqueUntilNextBlink = true;
+
       // We're using a Ticker to blink. Restart it.
       _ticker!
         ..stop()
@@ -88,12 +130,17 @@ class BlinkController with ChangeNotifier {
   }
 
   void stopBlinking() {
-    _isVisible = true; // If we're not blinking then we need to be visible
+    // If we're not blinking then we need to be visible with full opacity.
+    _isVisible = true;
+    _opacity = 1.0;
+
+    // Keep the caret opaque until the flash period has elapsed, when it
+    // starts to fade out.
+    _isCaretOpaqueUntilNextBlink = true;
 
     if (_ticker != null) {
       // We're using a Ticker to blink. Stop it.
       _ticker?.stop();
-      _ticker = null;
     } else {
       // We're using a Timer to blink. Stop it.
       _timer?.cancel();
@@ -118,6 +165,13 @@ class BlinkController with ChangeNotifier {
   }
 
   void _onTick(Duration elapsedTime) {
+    if (isBlinking && _animate && !_isCaretOpaqueUntilNextBlink) {
+      final percentage = ((elapsedTime - _lastBlinkTime).inMilliseconds / _fadeDuration.inMilliseconds).clamp(0.0, 1.0);
+      // If the caret is visible, we want to fade in. Otherwise, we want to fade out.
+      _opacity = _isVisible ? percentage : 1 - percentage;
+      notifyListeners();
+    }
+
     if (elapsedTime - _lastBlinkTime >= _flashPeriod) {
       _blink();
       _lastBlinkTime = elapsedTime;
@@ -126,6 +180,15 @@ class BlinkController with ChangeNotifier {
 
   void _blink() {
     _isVisible = !_isVisible;
+    if (!_animate) {
+      // We are not animating the visibility, so the caret is
+      // either fully visible or fully invisible.
+      _opacity = _isVisible ? 1.0 : 0.0;
+    } else {
+      // We are animating the visibility, start fading in or out.
+      _isCaretOpaqueUntilNextBlink = false;
+    }
+
     notifyListeners();
 
     if (_timer != null && _isBlinkingEnabled) {
