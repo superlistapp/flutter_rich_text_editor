@@ -26,15 +26,16 @@ void main() {
     testWidgetsOnIos("shows toolbar when tapping on caret", (tester) async {
       await _pumpSingleParagraphApp(tester);
 
-      // Place the caret.
-      await tester.tapInParagraph("1", 200);
+      // Place the caret at the end of a word, because iOS snaps the caret
+      // to word boundaries by default.
+      await tester.tapInParagraph("1", 207);
 
       // Ensure all controls are hidden.
       expect(SuperEditorInspector.isMobileMagnifierVisible(), isFalse);
       expect(SuperEditorInspector.isMobileToolbarVisible(), isFalse);
 
       // Tap again on the caret.
-      await tester.tapInParagraph("1", 200);
+      await tester.tapInParagraph("1", 207);
 
       // Ensure that the toolbar is visible.
       expect(SuperEditorInspector.isMobileToolbarVisible(), isTrue);
@@ -218,7 +219,7 @@ void main() {
     });
 
     testWidgetsOnIos("keeps current selection when tapping on caret", (tester) async {
-      await _pumpSingleParagraphApp(tester, useIosSelectionHeuristics: true);
+      await _pumpSingleParagraphApp(tester);
 
       // Tap at "consectetur|" to place the caret.
       await tester.tapInParagraph("1", 39);
@@ -373,15 +374,12 @@ void main() {
   });
 }
 
-Future<void> _pumpSingleParagraphApp(
-  WidgetTester tester, {
-  bool useIosSelectionHeuristics = false,
-}) async {
+Future<void> _pumpSingleParagraphApp(WidgetTester tester) async {
   await tester
       .createDocument()
       // Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...
       .withSingleParagraph()
       .simulateSoftwareKeyboardInsets(true)
-      .useIosSelectionHeuristics(useIosSelectionHeuristics)
+      .useIosSelectionHeuristics(true)
       .pump();
 }
