@@ -430,6 +430,7 @@ class AndroidDocumentTouchInteractor extends StatefulWidget {
     required this.selection,
     this.openKeyboardWhenTappingExistingSelection = true,
     required this.openSoftwareKeyboard,
+    required this.isImeConnected,
     required this.scrollController,
     required this.fillViewport,
     this.contentTapHandlers,
@@ -451,6 +452,10 @@ class AndroidDocumentTouchInteractor extends StatefulWidget {
 
   /// A callback that should open the software keyboard when invoked.
   final VoidCallback openSoftwareKeyboard;
+
+  /// A [ValueListenable] that should notify this widget when the IME connects
+  /// and disconnects.
+  final ValueListenable<bool> isImeConnected;
 
   /// Optional list of handlers that respond to taps on content, e.g., opening
   /// a link when the user taps on text with a link attribution.
@@ -671,6 +676,9 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
   }
 
   void _onDocumentChange(_) {
+    // The user might start typing when the toolbar is visible. Hide it.
+    _controlsController!.hideToolbar();
+
     onNextFrame((_) {
       _ensureSelectionExtentIsVisible();
     });
@@ -751,7 +759,7 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
     if (_isLongPressInProgress) {
       _longPressStrategy = null;
       _magnifierGlobalOffset.value = null;
-      _showAndHideEditingControlsAfterTapSelection(didTapOnExistingSelection: false);
+      _onLongPressEnd();
       return;
     }
 
@@ -985,7 +993,7 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
         ..hideMagnifier()
         ..blinkCaret();
 
-      if (didTapOnExistingSelection && _isKeyboardOpen) {
+      if (didTapOnExistingSelection && widget.isImeConnected.value) {
         // Toggle the toolbar display when the user taps on the collapsed caret,
         // or on top of an existing selection.
         //
@@ -998,16 +1006,6 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
         _controlsController!.hideToolbar();
       }
     }
-  }
-
-  /// Returns `true` if we *think* the software keyboard is currently open, or
-  /// `false` otherwise.
-  ///
-  /// We say "think" because Flutter doesn't report this info to us. Instead, we
-  /// inspect the bottom insets on the window, and we assume any insets greater than
-  /// zero means a keyboard is visible.
-  bool get _isKeyboardOpen {
-    return MediaQuery.viewInsetsOf(context).bottom > 0;
   }
 
   void _onPanStart(DragStartDetails details) {
@@ -1168,7 +1166,7 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
   }
 
   void _onLongPressEnd() {
-    _longPressStrategy!.onLongPressEnd();
+    _longPressStrategy?.onLongPressEnd();
 
     // Cancel any on-going long-press.
     _longPressStrategy = null;
@@ -1178,10 +1176,12 @@ class _AndroidDocumentTouchInteractorState extends State<AndroidDocumentTouchInt
 
     _controlsController!.hideMagnifier();
     if (!widget.selection.value!.isCollapsed) {
-      _controlsController!
-        ..showExpandedHandles()
-        ..showToolbar();
+      _controlsController!.showExpandedHandles();
     }
+
+    // Show the toolbar even the selection is collapsed, because the user might
+    // be long-pressing on an empty paragraph or on a whitespace.
+    _controlsController!.showToolbar();
   }
 
   void _onCaretDragEnd() {
