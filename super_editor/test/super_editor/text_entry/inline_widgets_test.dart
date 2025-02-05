@@ -133,6 +133,58 @@ void main() {
         ),
       );
     });
+
+    testWidgetsOnArbitraryDesktop("can insert an inline widget with attributions in an empty paragraph",
+        (tester) async {
+      final editor = await _pumpScaffold(tester);
+
+      // Insert an empty text containing a placeholder with an attribution around it.
+      editor.execute([
+        InsertStyledTextAtCaretRequest(
+          AttributedText(
+              '',
+              AttributedSpans(
+                attributions: [
+                  const SpanMarker(
+                    attribution: _emojiAttribution,
+                    offset: 0,
+                    markerType: SpanMarkerType.start,
+                  ),
+                  const SpanMarker(
+                    attribution: _emojiAttribution,
+                    offset: 0,
+                    markerType: SpanMarkerType.end,
+                  ),
+                ],
+              ),
+              {
+                0: const _TestPlaceholder(),
+              }),
+        ),
+      ]);
+      await tester.pump();
+
+      // Ensure we can type after the inline placeholder was added.
+      await tester.typeImeText('hello');
+
+      // Ensure the inline widget was kept, the text was inserted, and the attribution
+      // was not applied to the inserted characters.
+      expect(
+        SuperEditorInspector.findTextInComponent('1'),
+        AttributedText(
+          'hello',
+          AttributedSpans(
+            attributions: const [
+              SpanMarker(attribution: _emojiAttribution, offset: 0, markerType: SpanMarkerType.start),
+              SpanMarker(attribution: _emojiAttribution, offset: 0, markerType: SpanMarkerType.end),
+            ],
+          ),
+          {
+            0: const _TestPlaceholder(),
+          },
+        ),
+      );
+    });
   });
 }
 
@@ -165,3 +217,5 @@ Widget? _buildInlineTestWidget(BuildContext context, TextStyle style, Object pla
 class _TestPlaceholder {
   const _TestPlaceholder();
 }
+
+const _emojiAttribution = NamedAttribution('emoji');

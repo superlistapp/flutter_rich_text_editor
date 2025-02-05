@@ -440,6 +440,46 @@ void main() {
           }),
         );
       });
+
+      test("empty text with leading placeholder (with attributions)", () {
+        // Create an empty text containing a placeholder with an attribution around it.
+        final text = AttributedText(
+          '',
+          AttributedSpans(
+            attributions: [
+              const SpanMarker(
+                attribution: _bold,
+                offset: 0,
+                markerType: SpanMarkerType.start,
+              ),
+              const SpanMarker(
+                attribution: _bold,
+                offset: 0,
+                markerType: SpanMarkerType.end,
+              ),
+            ],
+          ),
+          {
+            0: const _FakePlaceholder('leading'),
+          },
+        );
+
+        expect(
+          text.copyText(0),
+          AttributedText(
+            "",
+            AttributedSpans(
+              attributions: const [
+                SpanMarker(attribution: _bold, offset: 0, markerType: SpanMarkerType.start),
+                SpanMarker(attribution: _bold, offset: 0, markerType: SpanMarkerType.end),
+              ],
+            ),
+            {
+              0: const _FakePlaceholder("leading"),
+            },
+          ),
+        );
+      });
     });
 
     group("copy and append >", () {
